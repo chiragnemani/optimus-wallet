@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Optimus Wallet</title>
   
-  <!-- iOS Web App Specific Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Optimus">
@@ -16,31 +15,36 @@
 </head>
 <body>
 
+  <!-- Ambient Background Glows for Glassmorphism -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
   <!-- Top Header -->
-  <header class="app-header">
+  <header class="app-header glass-header">
     <h1>Optimus Wallet</h1>
-    <p class="subtitle">Smart Card & Savings Engine</p>
+    <p class="subtitle">Smart Financial Assistant</p>
   </header>
 
-  <!-- Main Content Area -->
   <main class="container">
 
     <!-- TAB 1: RECOMMENDATIONS -->
     <section id="tab-recommend" class="tab-content active">
-      <div class="card-box spotlight">
-        <h2>What are you buying?</h2>
-        <select id="category-select" class="dropdown">
-          <option value="dining">🍽️ Restaurants & Dining</option>
-          <option value="groceries">🛒 Groceries & Supermarkets</option>
-          <option value="gas">⛽ Gas & Fuel</option>
-          <option value="travel">✈️ Travel & Flights</option>
-          <option value="online">🛍️ Online Shopping</option>
-          <option value="streaming">🎬 Streaming Services</option>
-          <option value="other">💳 General / Everything Else</option>
-        </select>
+      <div class="glass-card spotlight">
+        <h2>Select Merchant Category</h2>
+        <div class="select-wrapper">
+          <select id="category-select" class="glass-input">
+            <option value="dining">Restaurants & Dining</option>
+            <option value="groceries">Groceries & Supermarkets</option>
+            <option value="gas">Gas & Fuel</option>
+            <option value="travel">Travel & Flights</option>
+            <option value="online">Online Shopping</option>
+            <option value="streaming">Streaming Services</option>
+            <option value="other">General / Everything Else</option>
+          </select>
+        </div>
 
-        <div id="recommendation-result" class="result-card">
-          <span class="badge">BEST CARD TO USE</span>
+        <div id="recommendation-result" class="result-glass-card">
+          <span class="badge">RECOMMENDED CARD</span>
           <h3 id="best-card-name">Select a category above</h3>
           <p id="best-card-perk" class="highlight">---</p>
         </div>
@@ -50,86 +54,92 @@
     <!-- TAB 2: MY CARDS -->
     <section id="tab-cards" class="tab-content">
       <div class="section-header">
-        <h2>My Saved Cards</h2>
-        <button id="btn-add-card" class="btn-primary">+ Add Card</button>
+        <h2>My Cards</h2>
+        <button id="btn-add-card" class="btn-glass">+ Add Card</button>
       </div>
 
-      <div id="cards-list" class="item-list">
-        <!-- Rendered via JS -->
-      </div>
+      <div id="cards-list" class="item-list"></div>
     </section>
 
-    <!-- TAB 3: DEALS & OFFERS -->
+    <!-- TAB 3: DEALS -->
     <section id="tab-deals" class="tab-content">
-      <h2>Active Brand & Card Deals</h2>
-      <div id="deals-list" class="item-list">
-        <!-- Rendered via JS -->
-      </div>
+      <h2>Active Offers & Deals</h2>
+      <div id="deals-list" class="item-list"></div>
     </section>
 
-    <!-- TAB 4: SUBSCRIPTIONS & BILLS -->
+    <!-- TAB 4: BILLS & SUBSCRIPTIONS -->
     <section id="tab-bills" class="tab-content">
       <div class="section-header">
         <h2>Bills & Subscriptions</h2>
-        <button id="btn-add-bill" class="btn-primary">+ Add Bill</button>
+        <button id="btn-add-bill" class="btn-glass">+ Add Bill</button>
       </div>
 
-      <div class="summary-box">
-        <span>Monthly Estimated Total</span>
+      <div class="glass-card summary-card">
+        <span>Monthly Recurring Total</span>
         <h3 id="total-bill-amount">$0.00</h3>
       </div>
 
-      <div id="bills-list" class="item-list">
-        <!-- Rendered via JS -->
-      </div>
+      <div id="bills-list" class="item-list"></div>
     </section>
 
   </main>
 
-  <!-- iOS Bottom Navigation Bar -->
-  <nav class="bottom-nav">
+  <!-- Navigation Bar with Premium Vector Icons -->
+  <nav class="bottom-nav glass-nav">
     <button class="nav-item active" data-tab="tab-recommend">
-      <span class="icon">🎯</span>
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+      </svg>
       <span class="label">Pay Smart</span>
     </button>
+    
     <button class="nav-item" data-tab="tab-cards">
-      <span class="icon">💳</span>
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
       <span class="label">Cards</span>
     </button>
+    
     <button class="nav-item" data-tab="tab-deals">
-      <span class="icon">🏷️</span>
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+        <line x1="7" y1="7" x2="7.01" y2="7"/>
+      </svg>
       <span class="label">Deals</span>
     </button>
+
     <button class="nav-item" data-tab="tab-bills">
-      <span class="icon">📅</span>
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
       <span class="label">Bills</span>
     </button>
   </nav>
 
-  <!-- Modal: Add Card -->
+  <!-- Modals -->
   <div id="modal-card" class="modal">
-    <div class="modal-content">
+    <div class="glass-card modal-content">
       <h3>Add New Card</h3>
-      <input type="text" id="input-card-name" placeholder="Card Name (e.g. Amex Gold)" />
-      <input type="text" id="input-card-best" placeholder="Best Category (e.g. Dining)" />
-      <input type="text" id="input-card-rate" placeholder="Reward Rate (e.g. 4x Points or 3%)" />
+      <input type="text" id="input-card-name" class="glass-input" placeholder="Card Name (e.g. Amex Gold)" />
+      <input type="text" id="input-card-best" class="glass-input" placeholder="Category (e.g. dining)" />
+      <input type="text" id="input-card-rate" class="glass-input" placeholder="Perk / Reward Rate (e.g. 4x Points)" />
       <div class="modal-actions">
-        <button id="btn-save-card" class="btn-primary">Save Card</button>
-        <button class="btn-secondary close-modal">Cancel</button>
+        <button id="btn-save-card" class="btn-glass btn-accent">Save</button>
+        <button class="btn-glass close-modal">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Add Bill -->
   <div id="modal-bill" class="modal">
-    <div class="modal-content">
+    <div class="glass-card modal-content">
       <h3>Add Subscription / Bill</h3>
-      <input type="text" id="input-bill-name" placeholder="Service Name (e.g. Netflix)" />
-      <input type="number" id="input-bill-amount" placeholder="Amount ($)" step="0.01" />
-      <input type="date" id="input-bill-date" />
+      <input type="text" id="input-bill-name" class="glass-input" placeholder="Service Name (e.g. Netflix)" />
+      <input type="number" id="input-bill-amount" class="glass-input" placeholder="Monthly Amount ($)" step="0.01" />
+      <input type="date" id="input-bill-date" class="glass-input" />
       <div class="modal-actions">
-        <button id="btn-save-bill" class="btn-primary">Save Bill</button>
-        <button class="btn-secondary close-modal">Cancel</button>
+        <button id="btn-save-bill" class="btn-glass btn-accent">Save</button>
+        <button class="btn-glass close-modal">Cancel</button>
       </div>
     </div>
   </div>
