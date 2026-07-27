@@ -1,863 +1,153 @@
-
-/*
-OPTIMUS WALLET
-Core Application Engine
-*/
-
-
-// =========================
-// DATABASE
-// =========================
-
-
-const DEFAULT_STATE = {
-
-    user:{
-        name:"there"
-    },
-
-
-    cards:[],
-
-    bills:[],
-
-    deals:[],
-
-
-    chat:[]
-
-
-};
-
-
-
-let state = loadState();
-
-
-
-function loadState(){
-
-    const saved =
-    localStorage.getItem("optimusWallet");
-
-
-    if(saved){
-
-        return JSON.parse(saved);
-
-    }
-
-
-    return structuredClone(DEFAULT_STATE);
-
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed', err));
 }
 
-
-
-function saveState(){
-
-    localStorage.setItem(
-        "optimusWallet",
-        JSON.stringify(state)
-    );
-
-}
-
-
-
-function uid(){
-
-    return crypto.randomUUID();
-
-}
-
-
-
-
-
-// =========================
-// NAVIGATION
-// =========================
-
-
-const pages =
-document.querySelectorAll(".page");
-
-
-const navItems =
-document.querySelectorAll(".nav-item");
-
-
-
-navItems.forEach(button=>{
-
-
-    button.onclick=()=>{
-
-
-        const page =
-        button.dataset.page;
-
-
-        openPage(page);
-
-
-    };
-
-
-});
-
-
-
-
-function openPage(page){
-
-
-    pages.forEach(p=>{
-
-        p.classList.remove("active");
-
-    });
-
-
-
-    navItems.forEach(n=>{
-
-        n.classList.remove("active");
-
-    });
-
-
-
-    document
-    .getElementById(page)
-    .classList.add("active");
-
-
-
-    document
-    .querySelector(
-        `[data-page="${page}"]`
-    )
-    ?.classList.add("active");
-
-
-
-    render();
-
-}
-
-
-
-
-
-// =========================
-// GREETING
-// =========================
-
-
-
-function updateGreeting(){
-
-
-    const hour =
-    new Date().getHours();
-
-
-    let text =
-    "GOOD EVENING";
-
-
-    if(hour<12)
-        text="GOOD MORNING";
-
-
-    else if(hour<18)
-        text="GOOD AFTERNOON";
-
-
-
-    document
-    .getElementById("greeting")
-    .innerText=text;
-
-
-
-    document
-    .getElementById("userName")
-    .innerText=
-    state.user.name;
-
-
-}
-
-
-
-
-
-
-
-// =========================
-// CARD ENGINE
-// =========================
-
-
-function bestCard(category){
-
-
-    if(!state.cards.length)
-
-        return null;
-
-
-
-    let best=null;
-
-
-
-    state.cards.forEach(card=>{
-
-
-        let rate =
-        card.cashback || 0;
-
-
-
-        if(
-            card.category &&
-            card.category===category
-        ){
-
-            rate += 2;
-
-        }
-
-
-
-        if(!best || rate>best.rate){
-
-            best={
-                card,
-                rate
-            };
-
-        }
-
-
-    });
-
-
-
-    return best;
-
-}
-
-
-
-
-
-
-// =========================
-// HOME
-// =========================
-
-
-
-function renderHome(){
-
-
-    const hero =
-    document.getElementById(
-        "recommendation"
-    );
-
-
-
-    const reason =
-    document.getElementById(
-        "recommendationReason"
-    );
-
-
-
-    const result =
-    bestCard("general");
-
-
-
-    if(!result){
-
-
-        hero.innerText =
-        "Add your cards to begin optimization.";
-
-
-        reason.innerText =
-        "Optimus will analyze rewards once your wallet is connected.";
-
-
-    }
-
-    else{
-
-
-        hero.innerText =
-        `Use ${result.card.name}`;
-
-
-
-        reason.innerText =
-        `${result.rate}% estimated reward rate`;
-
-    }
-
-
-
-
-
-    const bills =
-    document.getElementById(
-        "upcomingBills"
-    );
-
-
-
-    if(!state.bills.length){
-
-        bills.innerHTML =
-        `<div class="empty">
-        No bills added.
-        </div>`;
-
-    }
-
-    else{
-
-
-        bills.innerHTML =
-        state.bills
-        .slice(0,3)
-        .map(
-            b=>
-            `
-            <div class="wallet-card glass">
-
-            <div>
-            <strong>${b.name}</strong>
-            <br>
-            <small>
-            $${b.amount}
-            </small>
-
-            </div>
-
-            </div>
-            `
-        )
-        .join("");
-
-    }
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-// =========================
-// WALLET
-// =========================
-
-
-function renderWallet(){
-
-
-const container =
-document.getElementById(
-"cardsContainer"
-);
-
-
-
-if(!state.cards.length){
-
-container.innerHTML =
-`
-<div class="empty">
-No cards added.
-<br><br>
-Use + to add your first card.
-</div>
-`;
-
-return;
-
-}
-
-
-
-container.innerHTML =
-state.cards
-.map(card=>
-
-
-`
-<div class="wallet-card glass">
-
-
-<div class="card-color"
-style="
-background:${card.color||'#4ce0d2'}
-">
-</div>
-
-
-<div class="card-info">
-
-<div class="card-name">
-${card.name}
-</div>
-
-
-<div class="card-meta">
-
-${card.cashback||0}% cashback
-
-</div>
-
-</div>
-
-
-<button onclick="deleteCard('${card.id}')">
-×
-</button>
-
-
-</div>
-
-`
-
-)
-.join("");
-
-
-
-}
-
-
-
-
-
-
-
-function addCard(){
-
-
-const name =
-prompt(
-"Card name"
-);
-
-
-if(!name)
-return;
-
-
-
-const cashback =
-Number(
-prompt(
-"Cashback %"
-)
-||0
-);
-
-
-
-state.cards.push({
-
-id:uid(),
-
-name,
-
-cashback,
-
-color:"#4ce0d2"
-
-});
-
-
-
-saveState();
-
-render();
-
-
-
-}
-
-
-
-
-
-function deleteCard(id){
-
-
-state.cards =
-state.cards.filter(
-c=>c.id!==id
-);
-
-
-saveState();
-
-render();
-
-
-}
-
-
-
-
-
-
-
-document
-.getElementById("addCard")
-.onclick=
-addCard;
-
-
-
-
-
-
-
-// =========================
-// ADVISOR
-// =========================
-
-
-
-const categories=[
-
-"Groceries",
-
-"Dining",
-
-"Travel",
-
-"Gas",
-
-"Online",
-
-"Entertainment"
-
+// Initial Seed Data
+const defaultCards = [
+  { id: 1, name: "Amex Gold", category: "dining", perk: "4x Points on Dining & Groceries" },
+  { id: 2, name: "Chase Sapphire Preferred", category: "travel", perk: "3x Points on Travel & Streaming" },
+  { id: 3, name: "Citi Double Cash", category: "other", perk: "2% Flat Cash Back on Everything" }
 ];
 
+const defaultDeals = [
+  { id: 1, brand: "Starbucks", offer: "10% Cashback with Chase Card", expires: "Ends in 4 days" },
+  { id: 2, brand: "Uber Eats", offer: "$10 Monthly Statement Credit", expires: "Renews monthly" },
+  { id: 3, brand: "Target", offer: "5% Instant Discount", expires: "Ongoing" }
+];
 
+const defaultBills = [
+  { id: 1, name: "Netflix", amount: 15.99, date: "2026-08-01" },
+  { id: 2, name: "Gym Membership", amount: 29.99, date: "2026-08-05" }
+];
 
-function renderAdvisor(){
+// Local Storage Loaders
+let cards = JSON.parse(localStorage.getItem('optimus_cards')) || defaultCards;
+let deals = defaultDeals;
+let bills = JSON.parse(localStorage.getItem('optimus_bills')) || defaultBills;
 
+// Tab Navigation
+document.querySelectorAll('.nav-item').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    
+    button.classList.add('active');
+    document.getElementById(button.dataset.tab).classList.add('active');
+  });
+});
 
-const grid =
-document.getElementById(
-"categoryGrid"
-);
+// Recommendation Logic
+const categorySelect = document.getElementById('category-select');
+categorySelect.addEventListener('change', updateRecommendation);
 
+function updateRecommendation() {
+  const selectedCat = categorySelect.value;
+  const matchedCard = cards.find(c => c.category === selectedCat) || cards.find(c => c.category === 'other') || cards[0];
 
-
-grid.innerHTML =
-categories
-.map(
-c=>
-
-`
-<button class="category"
-onclick="advisor('${c}')">
-
-${c}
-
-</button>
-
-`
-)
-.join("");
-
-
-
+  if (matchedCard) {
+    document.getElementById('best-card-name').innerText = matchedCard.name;
+    document.getElementById('best-card-perk').innerText = matchedCard.perk;
+  }
 }
 
-
-
-
-function advisor(category){
-
-
-const output =
-document.getElementById(
-"advisorResult"
-);
-
-
-
-const result =
-bestCard(category);
-
-
-
-if(!result){
-
-
-output.innerHTML=
-
-`
-<div class="glass panel">
-
-Add cards first.
-
-</div>
-
-`;
-
-return;
-
-
+// Render Saved Cards
+function renderCards() {
+  const list = document.getElementById('cards-list');
+  list.innerHTML = '';
+  cards.forEach(card => {
+    list.innerHTML += `
+      <div class="list-item">
+        <div>
+          <strong>${card.name}</strong>
+          <p style="font-size: 13px; color: #8e8e93;">${card.perk}</p>
+        </div>
+      </div>
+    `;
+  });
 }
 
-
-
-output.innerHTML=
-
-`
-
-<div class="glass panel">
-
-<h3>
-Use ${result.card.name}
-</h3>
-
-<p>
-Based only on your saved rewards:
-${result.rate}%
-
-</p>
-
-</div>
-
-`;
-
-
+// Render Deals
+function renderDeals() {
+  const list = document.getElementById('deals-list');
+  list.innerHTML = '';
+  deals.forEach(deal => {
+    list.innerHTML += `
+      <div class="list-item">
+        <div>
+          <strong>${deal.brand}</strong>
+          <p style="font-size: 13px; color: #34c759;">${deal.offer}</p>
+        </div>
+        <span style="font-size: 11px; color: #8e8e93;">${deal.expires}</span>
+      </div>
+    `;
+  });
 }
 
+// Render Bills
+function renderBills() {
+  const list = document.getElementById('bills-list');
+  list.innerHTML = '';
+  let total = 0;
 
+  bills.forEach(bill => {
+    total += parseFloat(bill.amount);
+    list.innerHTML += `
+      <div class="list-item">
+        <div>
+          <strong>${bill.name}</strong>
+          <p style="font-size: 13px; color: #8e8e93;">Due: ${bill.date}</p>
+        </div>
+        <strong>$${parseFloat(bill.amount).toFixed(2)}</strong>
+      </div>
+    `;
+  });
 
-
-
-
-
-// =========================
-// OPTIMUS AI
-// =========================
-
-
-
-document
-.getElementById("sendMessage")
-.onclick=
-sendMessage;
-
-
-
-async function sendMessage(){
-
-
-const input =
-document.getElementById(
-"chatInput"
-);
-
-
-
-const text =
-input.value.trim();
-
-
-
-if(!text)
-return;
-
-
-
-input.value="";
-
-
-
-addChat(
-"user",
-text
-);
-
-
-
-const response =
-generateAnswer(text);
-
-
-
-addChat(
-"assistant",
-response
-);
-
-
-
+  document.getElementById('total-bill-amount').innerText = `$${total.toFixed(2)}`;
 }
 
-
-
-
-
-function addChat(role,text){
-
-
-const box =
-document.getElementById(
-"chat"
-);
-
-
-
-const div =
-document.createElement(
-"div"
-);
-
-
-
-div.className=
-"message "+role;
-
-
-div.innerText=text;
-
-
-box.appendChild(div);
-
-
-}
-
-
-
-
-
-function generateAnswer(question){
-
-
-const q =
-question.toLowerCase();
-
-
-
-if(
-q.includes("card")
-||
-q.includes("use")
-){
-
-
-if(!state.cards.length)
-
-return:
-
-"I don't have any cards saved yet. Add your wallet details first.";
-
-
-
-const card =
-state.cards[0];
-
-
-
-return:
-
-`Based on your saved cards, I recommend ${card.name}. I only use information you have provided.`;
-
-
-}
-
-
-
-
-
-if(
-q.includes("bill")
-){
-
-
-if(!state.bills.length)
-
-return:
-
-"You have no bills tracked yet.";
-
-
-return:
-
-"You have bills saved. Open the Bills section for details.";
-
-}
-
-
-
-
-return:
-
-"I don't have enough information to answer that yet. I won't guess — add more financial data and I can help optimize it.";
-
-}
-
-
-
-
-
-
-
-// =========================
-// RENDER
-// =========================
-
-
-
-function render(){
-
-updateGreeting();
-
-renderHome();
-
-renderWallet();
-
-renderAdvisor();
-
-}
-
-
-
-
-// =========================
-// INIT
-// =========================
-
-
-
-render();
-
+// Modal Toggle Handlers
+document.getElementById('btn-add-card').addEventListener('click', () => document.getElementById('modal-card').classList.add('open'));
+document.getElementById('btn-add-bill').addEventListener('click', () => document.getElementById('modal-bill').classList.add('open'));
+
+document.querySelectorAll('.close-modal').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('modal-card').classList.remove('open');
+    document.getElementById('modal-bill').classList.remove('open');
+  });
+});
+
+// Save New Card
+document.getElementById('btn-save-card').addEventListener('click', () => {
+  const name = document.getElementById('input-card-name').value;
+  const best = document.getElementById('input-card-best').value.toLowerCase();
+  const perk = document.getElementById('input-card-rate').value;
+
+  if (name && perk) {
+    cards.push({ id: Date.now(), name, category: best || 'other', perk });
+    localStorage.setItem('optimus_cards', JSON.stringify(cards));
+    renderCards();
+    updateRecommendation();
+    document.getElementById('modal-card').classList.remove('open');
+  }
+});
+
+// Save New Bill
+document.getElementById('btn-save-bill').addEventListener('click', () => {
+  const name = document.getElementById('input-bill-name').value;
+  const amount = document.getElementById('input-bill-amount').value;
+  const date = document.getElementById('input-bill-date').value;
+
+  if (name && amount) {
+    bills.push({ id: Date.now(), name, amount, date });
+    localStorage.setItem('optimus_bills', JSON.stringify(bills));
+    renderBills();
+    document.getElementById('modal-bill').classList.remove('open');
+  }
+});
+
+// Initialize App
+updateRecommendation();
+renderCards();
+renderDeals();
+renderBills();
