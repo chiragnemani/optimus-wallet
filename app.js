@@ -1,28 +1,10 @@
-// Global Tab Switcher (Direct Execution)
-window.switchTab = function(btnElement, targetTabId) {
-  // Remove active state from all buttons and tabs
-  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-
-  // Activate target button and section
-  btnElement.classList.add('active');
-  const targetTab = document.getElementById(targetTabId);
-  if (targetTab) {
-    targetTab.classList.add('active');
-  }
-};
-
 // --- CONFIGURATION ---
 const SUPABASE_URL = 'https://iiyebyenpnafqqiksghi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpeWVieWVucG5hZnFxaWtzZ2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxMDgzMDUsImV4cCI6MjEwMDY4NDMwNX0.tseR2aEJlMBy0ZEuUUfjjnaicwc8EW_d3ibBEJDoFC4';
 
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed', err));
-}
-
-// Global Variables
-let supabase = null;
+// Global Data Store
+let userCards = JSON.parse(localStorage.getItem('optimus_user_cards')) || [];
+let bills = JSON.parse(localStorage.getItem('optimus_bills')) || [];
 
 const CARD_CATALOG = [
   { id: 'amex_gold', name: 'American Express Gold', bestCategory: 'dining', rates: { dining: '4x Points', groceries: '4x Points', default: '1x Points' } },
@@ -38,45 +20,29 @@ const MERCHANT_MAP = {
   'apple': { category: 'other', customPerk: 'Best: Apple Card (3% via Apple Pay)' }
 };
 
-let userCards = JSON.parse(localStorage.getItem('optimus_user_cards')) || [];
-let bills = JSON.parse(localStorage.getItem('optimus_bills')) || [];
+// --- GLOBAL TAB SWITCHER (GUARANTEED TO WORK) ---
+window.switchTab = function(btnElement, targetTabId) {
+  // Remove active class from all nav items and tab contents
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
 
-// --- INITIALIZE APP SAFELY ---
+  // Activate selected item and tab
+  if (btnElement) btnElement.classList.add('active');
+  const targetTab = document.getElementById(targetTabId);
+  if (targetTab) targetTab.classList.add('active');
+};
+
+// --- INITIALIZATION ON PAGE LOAD ---
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. BIND TAB SWITCHING FIRST (Guarantees tabs always work)
-  setupTabs();
-
-  // 2. RENDER LOCAL DATA
   renderCards();
   renderBills();
   updateRecommendation();
-
-  // 3. SAFELY CONNECT TO SUPABASE
-  initSupabaseAndFetch();
+  initSupabaseData();
+  setupUIEvents();
 });
 
-function setupTabs() {
-  const navButtons = document.querySelectorAll('.nav-item');
-  navButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Remove active class from all tabs and buttons
-      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      
-      // Set clicked tab as active
-      button.classList.add('active');
-      const targetTabId = button.dataset.tab;
-      const targetTab = document.getElementById(targetTabId);
-      
-      if (targetTab) {
-        targetTab.classList.add('active');
-      }
-    });
-  });
-
-  // Category & Search listeners
+// --- UI EVENT LISTENERS ---
+function setupUIEvents() {
   const categorySelect = document.getElementById('category-select');
   const merchantSearch = document.getElementById('merchant-search');
 
@@ -97,21 +63,22 @@ function setupTabs() {
     });
   }
 
-  // Modal Handlers
+  // Modals
   const btnAddCard = document.getElementById('btn-add-card');
-  const btnAddBill = document.getElementById('btn-add-bill');
-  
   if (btnAddCard) {
     btnAddCard.addEventListener('click', () => {
       const catalogSelect = document.getElementById('catalog-card-select');
       if (catalogSelect) {
         catalogSelect.innerHTML = '';
-        CARD_CATALOG.forEach(card => catalogSelect.innerHTML += `<option value="${card.id}">${card.name}</option>`);
+        CARD_CATALOG.forEach(card => {
+          catalogSelect.innerHTML += `<option value="${card.id}">${card.name}</option>`;
+        });
       }
       document.getElementById('modal-card')?.classList.add('open');
     });
   }
 
+  const btnAddBill = document.getElementById('btn-add-bill');
   if (btnAddBill) {
     btnAddBill.addEventListener('click', () => {
       document.getElementById('modal-bill')?.classList.add('open');
@@ -159,23 +126,18 @@ function setupTabs() {
   }
 }
 
-// --- SUPABASE FETCH WITH ERROR CATCHING ---
-async function initSupabaseAndFetch() {
+// --- DATABASE FETCH ---
+async function initSupabaseData() {
   const list = document.getElementById('deals-list');
   try {
-    if (window.supabase && typeof window.supabase.createClient === 'function') {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const { data, error } = await supabase.from('live_deals').select('*');
+    if (window.supabase && SUPABASE_URL !== 'PASTE_YOUR_SUPABASE_URL_HERE') {
+      const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data, error } = await client.from('live_deals').select('*');
       
       if (error) throw error;
       
-      if (list) {
-        list.innerHTML = '';
-        if (data.length === 0) {
-          list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">No live deals right now.</p>`;
-          return;
-        }
-
+      if (list && data) {
+        list.innerHTML = data.length === 0 ? `<p style="text-align:center; color: var(--text-muted);">No live deals right now.</p>` : '';
         data.forEach(deal => {
           list.innerHTML += `
             <div class="glass-card list-item">
@@ -188,18 +150,18 @@ async function initSupabaseAndFetch() {
           `;
         });
       }
-    } else {
-      throw new Error("Supabase SDK failed to load from CDN.");
+    } else if (list) {
+      list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">Supabase URL not configured yet.</p>`;
     }
   } catch (err) {
-    console.error('Supabase error:', err);
+    console.error('Database connection error:', err);
     if (list) {
-      list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">Could not load live deals (Offline / Config Error).</p>`;
+      list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">Could not fetch live deals.</p>`;
     }
   }
 }
 
-// --- HELPER FUNCTIONS ---
+// --- RENDERING HELPERS ---
 function updateRecommendation() {
   const nameEl = document.getElementById('best-card-name');
   const perkEl = document.getElementById('best-card-perk');
@@ -218,7 +180,7 @@ function updateRecommendation() {
   const selectedCat = categorySelect ? categorySelect.value : 'dining';
   const searchQuery = merchantSearch ? merchantSearch.value.toLowerCase().trim() : '';
 
-  let bestCard = userCards.find(c => c.bestCategory === selectedCat) || userCards[0];
+  let bestCard = userCards.find(c => c.bestCategory === selectedCat) || userCards.default || userCards[0];
   let perkText = bestCard.rates[selectedCat] || bestCard.rates.default || 'Standard Rewards';
 
   if (searchQuery && MERCHANT_MAP[searchQuery]) {
