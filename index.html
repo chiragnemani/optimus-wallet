@@ -1,515 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-<meta name="theme-color" content="#0b0d12">
-<meta name="color-scheme" content="light dark">
-
-<title>Optimus Wallet</title>
-
-<link rel="manifest" href="./manifest.json">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="./styles.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Optimus Wallet</title>
+  
+  <!-- iOS Web App Specific Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Optimus">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
 
-<div id="app">
-
-
-<!-- HEADER -->
-
-<header class="header">
-
-<div>
-<p id="greeting" class="eyebrow">
-GOOD EVENING
-</p>
-
-<h1>
-<span id="userName">
-there
-</span>
-</h1>
-
-</div>
-
-
-<div class="header-actions">
-
-<button id="settingsBtn"
-class="icon-button">
-
-⚙
-
-</button>
-
-
-<button id="optimusBtn"
-class="orb-button">
-
-<div class="orb"></div>
-
-</button>
-
-
-</div>
-
-</header>
-
-
-
-<!-- MAIN -->
-
-<main>
-
-
-<!-- HOME -->
-
-<section id="home"
-class="page active">
-
-
-<div class="hero glass">
-
-<div>
-
-<p class="label">
-OPTIMUS RECOMMENDS
-</p>
-
-
-<h2 id="recommendation">
-Add your cards to begin optimization.
-</h2>
-
-
-<p id="recommendationReason"
-class="muted">
-
-</p>
-
-</div>
-
-
-</div>
-
-
-
-<div class="glass panel">
-
-<div class="panel-header">
-
-<h3>
-Upcoming
-</h3>
-
-<button data-page="bills">
-View all
-</button>
-
-</div>
-
-
-<div id="upcomingBills">
-
-<div class="empty">
-No bills added.
-</div>
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="glass panel">
-
-<div class="panel-header">
-
-<h3>
-Active Deals
-</h3>
-
-
-<button data-page="deals">
-View all
-</button>
-
-</div>
-
-
-<div id="dealPreview">
-
-<div class="empty">
-No deals added.
-</div>
-
-
-</div>
-
-</div>
-
-
-
-</section>
-
-
-
-
-
-<!-- WALLET -->
-
-<section id="wallet"
-class="page">
-
-
-<div class="page-title">
-
-<h2>
-Wallet
-</h2>
-
-<button id="addCard">
-+
-</button>
-
-</div>
-
-
-
-<div id="cardsContainer">
-
-<div class="empty">
-
-No cards added.
-
-</div>
-
-</div>
-
-
-
-</section>
-
-
-
-
-
-
-
-<!-- ADVISOR -->
-
-<section id="advisor"
-class="page">
-
-
-<div class="page-title">
-
-<h2>
-Card Advisor
-</h2>
-
-</div>
-
-
-<div class="category-grid"
-id="categoryGrid">
-
-</div>
-
-
-
-<div id="advisorResult">
-
-</div>
-
-
-
-</section>
-
-
-
-
-
-
-
-<!-- OPTIMUS -->
-
-<section id="optimus"
-class="page">
-
-
-<div class="optimus-center">
-
-
-<div class="large-orb">
-
-</div>
-
-
-<p id="optimusStatus">
-
-STANDING BY
-
-</p>
-
-
-</div>
-
-
-
-<div id="chat">
-
-<div class="message assistant">
-
-I’m ready. Ask me about your cards, bills, or spending.
-
-</div>
-
-
-</div>
-
-
-
-<div class="chat-input">
-
-
-<input
-id="chatInput"
-placeholder="Ask Optimus...">
-
-
-<button id="sendMessage">
-
-➤
-
-</button>
-
-
-</div>
-
-
-
-</section>
-
-
-
-
-
-
-
-<!-- BILLS -->
-
-<section id="bills"
-class="page">
-
-
-<div class="page-title">
-
-<h2>
-Bills
-</h2>
-
-
-<button id="addBill">
-+
-</button>
-
-</div>
-
-
-
-<div id="billsContainer">
-
-<div class="empty">
-
-No bills tracked.
-
-</div>
-
-
-</div>
-
-
-
-</section>
-
-
-
-
-
-
-
-<!-- DEALS -->
-
-<section id="deals"
-class="page">
-
-
-<div class="page-title">
-
-<h2>
-Deals
-</h2>
-
-
-<button id="addDeal">
-+
-</button>
-
-
-</div>
-
-
-<div id="dealsContainer">
-
-<div class="empty">
-
-No deals saved.
-
-</div>
-
-
-</div>
-
-
-</section>
-
-
-
-</main>
-
-
-
-
-
-
-
-<!-- NAVIGATION -->
-
-
-<nav class="navigation">
-
-
-<button data-page="home"
-class="nav-item active">
-
-⌂
-
-<span>
-Home
-</span>
-
-</button>
-
-
-
-<button data-page="wallet"
-class="nav-item">
-
-▣
-
-<span>
-Wallet
-</span>
-
-</button>
-
-
-
-<button data-page="advisor"
-class="nav-item">
-
-◎
-
-<span>
-Advisor
-</span>
-
-</button>
-
-
-
-<button data-page="bills"
-class="nav-item">
-
-▤
-
-<span>
-Bills
-</span>
-
-</button>
-
-
-
-<button data-page="optimus"
-class="nav-item optimus-nav">
-
-◉
-
-<span>
-Optimus
-</span>
-
-</button>
-
-
-
-</nav>
-
-
-
-
-
-<!-- MODAL -->
-
-
-<div id="modal"
-class="modal hidden">
-
-
-<div class="modal-content glass">
-
-<button id="closeModal"
-class="close">
-
-×
-
-
-</button>
-
-
-<div id="modalBody">
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-<script src="./app.js"></script>
-
-
+  <!-- Top Header -->
+  <header class="app-header">
+    <h1>Optimus Wallet</h1>
+    <p class="subtitle">Smart Card & Savings Engine</p>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+
+    <!-- TAB 1: RECOMMENDATIONS -->
+    <section id="tab-recommend" class="tab-content active">
+      <div class="card-box spotlight">
+        <h2>What are you buying?</h2>
+        <select id="category-select" class="dropdown">
+          <option value="dining">🍽️ Restaurants & Dining</option>
+          <option value="groceries">🛒 Groceries & Supermarkets</option>
+          <option value="gas">⛽ Gas & Fuel</option>
+          <option value="travel">✈️ Travel & Flights</option>
+          <option value="online">🛍️ Online Shopping</option>
+          <option value="streaming">🎬 Streaming Services</option>
+          <option value="other">💳 General / Everything Else</option>
+        </select>
+
+        <div id="recommendation-result" class="result-card">
+          <span class="badge">BEST CARD TO USE</span>
+          <h3 id="best-card-name">Select a category above</h3>
+          <p id="best-card-perk" class="highlight">---</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: MY CARDS -->
+    <section id="tab-cards" class="tab-content">
+      <div class="section-header">
+        <h2>My Saved Cards</h2>
+        <button id="btn-add-card" class="btn-primary">+ Add Card</button>
+      </div>
+
+      <div id="cards-list" class="item-list">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 3: DEALS & OFFERS -->
+    <section id="tab-deals" class="tab-content">
+      <h2>Active Brand & Card Deals</h2>
+      <div id="deals-list" class="item-list">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: SUBSCRIPTIONS & BILLS -->
+    <section id="tab-bills" class="tab-content">
+      <div class="section-header">
+        <h2>Bills & Subscriptions</h2>
+        <button id="btn-add-bill" class="btn-primary">+ Add Bill</button>
+      </div>
+
+      <div class="summary-box">
+        <span>Monthly Estimated Total</span>
+        <h3 id="total-bill-amount">$0.00</h3>
+      </div>
+
+      <div id="bills-list" class="item-list">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- iOS Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="tab-recommend">
+      <span class="icon">🎯</span>
+      <span class="label">Pay Smart</span>
+    </button>
+    <button class="nav-item" data-tab="tab-cards">
+      <span class="icon">💳</span>
+      <span class="label">Cards</span>
+    </button>
+    <button class="nav-item" data-tab="tab-deals">
+      <span class="icon">🏷️</span>
+      <span class="label">Deals</span>
+    </button>
+    <button class="nav-item" data-tab="tab-bills">
+      <span class="icon">📅</span>
+      <span class="label">Bills</span>
+    </button>
+  </nav>
+
+  <!-- Modal: Add Card -->
+  <div id="modal-card" class="modal">
+    <div class="modal-content">
+      <h3>Add New Card</h3>
+      <input type="text" id="input-card-name" placeholder="Card Name (e.g. Amex Gold)" />
+      <input type="text" id="input-card-best" placeholder="Best Category (e.g. Dining)" />
+      <input type="text" id="input-card-rate" placeholder="Reward Rate (e.g. 4x Points or 3%)" />
+      <div class="modal-actions">
+        <button id="btn-save-card" class="btn-primary">Save Card</button>
+        <button class="btn-secondary close-modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Bill -->
+  <div id="modal-bill" class="modal">
+    <div class="modal-content">
+      <h3>Add Subscription / Bill</h3>
+      <input type="text" id="input-bill-name" placeholder="Service Name (e.g. Netflix)" />
+      <input type="number" id="input-bill-amount" placeholder="Amount ($)" step="0.01" />
+      <input type="date" id="input-bill-date" />
+      <div class="modal-actions">
+        <button id="btn-save-bill" class="btn-primary">Save Bill</button>
+        <button class="btn-secondary close-modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
