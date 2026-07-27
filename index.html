@@ -15,22 +15,33 @@
 </head>
 <body>
 
-  <!-- Ambient Background Glows for Glassmorphism -->
+  <!-- Ambient Background Glows -->
   <div class="bg-glow glow-1"></div>
   <div class="bg-glow glow-2"></div>
 
   <!-- Top Header -->
   <header class="app-header glass-header">
     <h1>Optimus Wallet</h1>
-    <p class="subtitle">Smart Financial Assistant</p>
+    <p class="subtitle">Smart Savings & Card Finder</p>
   </header>
 
   <main class="container">
 
-    <!-- TAB 1: RECOMMENDATIONS -->
+    <!-- TAB 1: RECOMMENDATIONS & SEARCH -->
     <section id="tab-recommend" class="tab-content active">
       <div class="glass-card spotlight">
-        <h2>Select Merchant Category</h2>
+        <h2>Where are you shopping?</h2>
+        
+        <!-- Quick Merchant Search -->
+        <div class="search-container">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="merchant-search" class="glass-input search-input" placeholder="Search merchant (e.g. Target, Uber, Amazon)..." />
+        </div>
+
+        <div class="divider"><span>OR CHOOSE CATEGORY</span></div>
+
         <div class="select-wrapper">
           <select id="category-select" class="glass-input">
             <option value="dining">Restaurants & Dining</option>
@@ -38,14 +49,14 @@
             <option value="gas">Gas & Fuel</option>
             <option value="travel">Travel & Flights</option>
             <option value="online">Online Shopping</option>
-            <option value="streaming">Streaming Services</option>
+            <option value="streaming">Streaming & Entertainment</option>
             <option value="other">General / Everything Else</option>
           </select>
         </div>
 
         <div id="recommendation-result" class="result-glass-card">
-          <span class="badge">RECOMMENDED CARD</span>
-          <h3 id="best-card-name">Select a category above</h3>
+          <span class="badge" id="recommend-badge">BEST CARD TO USE</span>
+          <h3 id="best-card-name">Add a card to get started</h3>
           <p id="best-card-perk" class="highlight">---</p>
         </div>
       </div>
@@ -63,7 +74,7 @@
 
     <!-- TAB 3: DEALS -->
     <section id="tab-deals" class="tab-content">
-      <h2>Active Offers & Deals</h2>
+      <h2>Active Card Deals & Benefits</h2>
       <div id="deals-list" class="item-list"></div>
     </section>
 
@@ -84,7 +95,7 @@
 
   </main>
 
-  <!-- Navigation Bar with Premium Vector Icons -->
+  <!-- Bottom Navigation -->
   <nav class="bottom-nav glass-nav">
     <button class="nav-item active" data-tab="tab-recommend">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -117,20 +128,21 @@
     </button>
   </nav>
 
-  <!-- Modals -->
+  <!-- Modal: Select Preset Card -->
   <div id="modal-card" class="modal">
     <div class="glass-card modal-content">
-      <h3>Add New Card</h3>
-      <input type="text" id="input-card-name" class="glass-input" placeholder="Card Name (e.g. Amex Gold)" />
-      <input type="text" id="input-card-best" class="glass-input" placeholder="Category (e.g. dining)" />
-      <input type="text" id="input-card-rate" class="glass-input" placeholder="Perk / Reward Rate (e.g. 4x Points)" />
+      <h3>Select Card from Catalog</h3>
+      <select id="catalog-card-select" class="glass-input">
+        <!-- Loaded via JS -->
+      </select>
       <div class="modal-actions">
-        <button id="btn-save-card" class="btn-glass btn-accent">Save</button>
+        <button id="btn-save-card" class="btn-glass btn-accent">Add to Wallet</button>
         <button class="btn-glass close-modal">Cancel</button>
       </div>
     </div>
   </div>
 
+  <!-- Modal: Add Bill -->
   <div id="modal-bill" class="modal">
     <div class="glass-card modal-content">
       <h3>Add Subscription / Bill</h3>
