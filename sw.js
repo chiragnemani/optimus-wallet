@@ -1,4 +1,4 @@
-const CACHE_NAME = 'optimus-v4';
+const CACHE_NAME = 'optimus-v5';
 const ASSETS = [
   './',
   './index.html',
