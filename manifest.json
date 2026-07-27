@@ -1,16 +1,20 @@
 {
-  "name": "Optimus Wallet",
   "short_name": "Optimus",
-  "description": "Your personal financial advisor — best card to use, deals, and bill reminders.",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0A0B0F",
-  "theme_color": "#0A0B0F",
+  "name": "Optimus Wallet",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#f2f2f7",
+  "theme_color": "#ffffff",
+  "display": "standalone"
 }
