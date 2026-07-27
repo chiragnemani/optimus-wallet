@@ -1,3 +1,17 @@
+// Global Tab Switcher (Direct Execution)
+window.switchTab = function(btnElement, targetTabId) {
+  // Remove active state from all buttons and tabs
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+  // Activate target button and section
+  btnElement.classList.add('active');
+  const targetTab = document.getElementById(targetTabId);
+  if (targetTab) {
+    targetTab.classList.add('active');
+  }
+};
+
 // --- CONFIGURATION ---
 const SUPABASE_URL = 'https://iiyebyenpnafqqiksghi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpeWVieWVucG5hZnFxaWtzZ2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxMDgzMDUsImV4cCI6MjEwMDY4NDMwNX0.tseR2aEJlMBy0ZEuUUfjjnaicwc8EW_d3ibBEJDoFC4';
