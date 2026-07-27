@@ -1,15 +1,15 @@
-// --- 1. SUPABASE CONNECTION ---
-// Paste your Supabase credentials here between the quotes
+// --- CONFIGURATION ---
 const SUPABASE_URL = 'https://iiyebyenpnafqqiksghi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpeWVieWVucG5hZnFxaWtzZ2hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxMDgzMDUsImV4cCI6MjEwMDY4NDMwNX0.tseR2aEJlMBy0ZEuUUfjjnaicwc8EW_d3ibBEJDoFC4';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+// Register Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed', err));
 }
 
-// --- 2. LOCAL DATA (User Wallet & Bills stay private on device) ---
+// Global Variables
+let supabase = null;
+
 const CARD_CATALOG = [
   { id: 'amex_gold', name: 'American Express Gold', bestCategory: 'dining', rates: { dining: '4x Points', groceries: '4x Points', default: '1x Points' } },
   { id: 'chase_sapphire_pref', name: 'Chase Sapphire Preferred', bestCategory: 'dining', rates: { dining: '3x Points', travel: '2x Points', default: '1x Points' } },
@@ -27,80 +27,200 @@ const MERCHANT_MAP = {
 let userCards = JSON.parse(localStorage.getItem('optimus_user_cards')) || [];
 let bills = JSON.parse(localStorage.getItem('optimus_bills')) || [];
 
-// --- 3. FETCH LIVE DEALS FROM SUPABASE ---
-async function fetchLiveDeals() {
-  const list = document.getElementById('deals-list');
-  try {
-    const { data, error } = await supabase.from('live_deals').select('*');
-    
-    if (error) throw error;
-    
-    list.innerHTML = ''; // Clear loading text
-    if (data.length === 0) {
-      list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">No live deals right now.</p>`;
-      return;
-    }
+// --- INITIALIZE APP SAFELY ---
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. BIND TAB SWITCHING FIRST (Guarantees tabs always work)
+  setupTabs();
 
-    data.forEach(deal => {
-      list.innerHTML += `
-        <div class="glass-card list-item">
-          <div>
-            <strong>${deal.brand}</strong>
-            <p style="font-size: 13px; color: var(--accent-color); font-weight: 600; margin-top: 2px;">${deal.offer}</p>
-          </div>
-          <span style="font-size: 11px; color: var(--text-muted);">${deal.expires}</span>
-        </div>
-      `;
+  // 2. RENDER LOCAL DATA
+  renderCards();
+  renderBills();
+  updateRecommendation();
+
+  // 3. SAFELY CONNECT TO SUPABASE
+  initSupabaseAndFetch();
+});
+
+function setupTabs() {
+  const navButtons = document.querySelectorAll('.nav-item');
+  navButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Remove active class from all tabs and buttons
+      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      
+      // Set clicked tab as active
+      button.classList.add('active');
+      const targetTabId = button.dataset.tab;
+      const targetTab = document.getElementById(targetTabId);
+      
+      if (targetTab) {
+        targetTab.classList.add('active');
+      }
     });
-  } catch (err) {
-    console.error('Error fetching deals:', err);
-    list.innerHTML = `<p style="text-align:center; color: #ff3b30;">Failed to connect to database.</p>`;
+  });
+
+  // Category & Search listeners
+  const categorySelect = document.getElementById('category-select');
+  const merchantSearch = document.getElementById('merchant-search');
+
+  if (categorySelect) {
+    categorySelect.addEventListener('change', () => {
+      if (merchantSearch) merchantSearch.value = '';
+      updateRecommendation();
+    });
+  }
+
+  if (merchantSearch) {
+    merchantSearch.addEventListener('input', () => {
+      const query = merchantSearch.value.toLowerCase().trim();
+      if (query && MERCHANT_MAP[query] && categorySelect) {
+        categorySelect.value = MERCHANT_MAP[query].category;
+      }
+      updateRecommendation();
+    });
+  }
+
+  // Modal Handlers
+  const btnAddCard = document.getElementById('btn-add-card');
+  const btnAddBill = document.getElementById('btn-add-bill');
+  
+  if (btnAddCard) {
+    btnAddCard.addEventListener('click', () => {
+      const catalogSelect = document.getElementById('catalog-card-select');
+      if (catalogSelect) {
+        catalogSelect.innerHTML = '';
+        CARD_CATALOG.forEach(card => catalogSelect.innerHTML += `<option value="${card.id}">${card.name}</option>`);
+      }
+      document.getElementById('modal-card')?.classList.add('open');
+    });
+  }
+
+  if (btnAddBill) {
+    btnAddBill.addEventListener('click', () => {
+      document.getElementById('modal-bill')?.classList.add('open');
+    });
+  }
+
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('modal-card')?.classList.remove('open');
+      document.getElementById('modal-bill')?.classList.remove('open');
+    });
+  });
+
+  const btnSaveCard = document.getElementById('btn-save-card');
+  if (btnSaveCard) {
+    btnSaveCard.addEventListener('click', () => {
+      const catalogSelect = document.getElementById('catalog-card-select');
+      if (catalogSelect) {
+        const selectedId = catalogSelect.value;
+        const catalogCard = CARD_CATALOG.find(c => c.id === selectedId);
+        if (catalogCard && !userCards.some(c => c.id === catalogCard.id)) {
+          userCards.push(catalogCard);
+          localStorage.setItem('optimus_user_cards', JSON.stringify(userCards));
+          renderCards();
+          updateRecommendation();
+        }
+      }
+      document.getElementById('modal-card')?.classList.remove('open');
+    });
+  }
+
+  const btnSaveBill = document.getElementById('btn-save-bill');
+  if (btnSaveBill) {
+    btnSaveBill.addEventListener('click', () => {
+      const name = document.getElementById('input-bill-name')?.value;
+      const amount = document.getElementById('input-bill-amount')?.value;
+      const date = document.getElementById('input-bill-date')?.value;
+      if (name && amount) {
+        bills.push({ id: Date.now(), name, amount, date });
+        localStorage.setItem('optimus_bills', JSON.stringify(bills));
+        renderBills();
+        document.getElementById('modal-bill')?.classList.remove('open');
+      }
+    });
   }
 }
 
-// --- 4. APP LOGIC ---
-document.querySelectorAll('.nav-item').forEach(button => {
-  button.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    button.classList.add('active');
-    document.getElementById(button.dataset.tab).classList.add('active');
-  });
-});
+// --- SUPABASE FETCH WITH ERROR CATCHING ---
+async function initSupabaseAndFetch() {
+  const list = document.getElementById('deals-list');
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data, error } = await supabase.from('live_deals').select('*');
+      
+      if (error) throw error;
+      
+      if (list) {
+        list.innerHTML = '';
+        if (data.length === 0) {
+          list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">No live deals right now.</p>`;
+          return;
+        }
 
-const categorySelect = document.getElementById('category-select');
-const merchantSearch = document.getElementById('merchant-search');
+        data.forEach(deal => {
+          list.innerHTML += `
+            <div class="glass-card list-item">
+              <div>
+                <strong>${deal.brand}</strong>
+                <p style="font-size: 13px; color: var(--accent-color); font-weight: 600; margin-top: 2px;">${deal.offer}</p>
+              </div>
+              <span style="font-size: 11px; color: var(--text-muted);">${deal.expires}</span>
+            </div>
+          `;
+        });
+      }
+    } else {
+      throw new Error("Supabase SDK failed to load from CDN.");
+    }
+  } catch (err) {
+    console.error('Supabase error:', err);
+    if (list) {
+      list.innerHTML = `<p style="text-align:center; color: var(--text-muted);">Could not load live deals (Offline / Config Error).</p>`;
+    }
+  }
+}
 
-categorySelect.addEventListener('change', () => { merchantSearch.value = ''; updateRecommendation(); });
-merchantSearch.addEventListener('input', () => {
-  const query = merchantSearch.value.toLowerCase().trim();
-  if (query && MERCHANT_MAP[query]) categorySelect.value = MERCHANT_MAP[query].category;
-  updateRecommendation();
-});
-
+// --- HELPER FUNCTIONS ---
 function updateRecommendation() {
+  const nameEl = document.getElementById('best-card-name');
+  const perkEl = document.getElementById('best-card-perk');
+  const badgeEl = document.getElementById('recommend-badge');
+  const categorySelect = document.getElementById('category-select');
+  const merchantSearch = document.getElementById('merchant-search');
+
+  if (!nameEl || !perkEl) return;
+
   if (userCards.length === 0) {
-    document.getElementById('best-card-name').innerText = "No cards in wallet";
-    document.getElementById('best-card-perk').innerText = "Tap 'Cards' tab to add your credit cards";
+    nameEl.innerText = "No cards in wallet";
+    perkEl.innerText = "Tap 'Cards' tab to add your credit cards";
     return;
   }
-  const selectedCat = categorySelect.value;
-  const searchQuery = merchantSearch.value.toLowerCase().trim();
+
+  const selectedCat = categorySelect ? categorySelect.value : 'dining';
+  const searchQuery = merchantSearch ? merchantSearch.value.toLowerCase().trim() : '';
+
   let bestCard = userCards.find(c => c.bestCategory === selectedCat) || userCards[0];
   let perkText = bestCard.rates[selectedCat] || bestCard.rates.default || 'Standard Rewards';
 
   if (searchQuery && MERCHANT_MAP[searchQuery]) {
-    document.getElementById('recommend-badge').innerText = `RECOMMENDED FOR ${searchQuery.toUpperCase()}`;
+    if (badgeEl) badgeEl.innerText = `RECOMMENDED FOR ${searchQuery.toUpperCase()}`;
     perkText = MERCHANT_MAP[searchQuery].customPerk;
   } else {
-    document.getElementById('recommend-badge').innerText = `BEST CARD TO USE`;
+    if (badgeEl) badgeEl.innerText = `BEST CARD TO USE`;
   }
-  document.getElementById('best-card-name').innerText = bestCard.name;
-  document.getElementById('best-card-perk').innerText = perkText;
+
+  nameEl.innerText = bestCard.name;
+  perkEl.innerText = perkText;
 }
 
 function renderCards() {
   const list = document.getElementById('cards-list');
+  if (!list) return;
   list.innerHTML = userCards.length === 0 ? `<p style="text-align:center; color: var(--text-muted);">Your wallet is empty.</p>` : '';
   userCards.forEach((card, index) => {
     list.innerHTML += `
@@ -120,6 +240,7 @@ window.deleteCard = function(index) {
 
 function renderBills() {
   const list = document.getElementById('bills-list');
+  if (!list) return;
   list.innerHTML = '';
   let total = 0;
   bills.forEach((bill, index) => {
@@ -130,7 +251,8 @@ function renderBills() {
         <div style="display:flex; align-items:center; gap: 10px;"><strong>$${parseFloat(bill.amount).toFixed(2)}</strong><button class="btn-delete" onclick="deleteBill(${index})">Delete</button></div>
       </div>`;
   });
-  document.getElementById('total-bill-amount').innerText = `$${total.toFixed(2)}`;
+  const totalEl = document.getElementById('total-bill-amount');
+  if (totalEl) totalEl.innerText = `$${total.toFixed(2)}`;
 }
 
 window.deleteBill = function(index) {
@@ -138,46 +260,3 @@ window.deleteBill = function(index) {
   localStorage.setItem('optimus_bills', JSON.stringify(bills));
   renderBills();
 };
-
-document.getElementById('btn-add-card').addEventListener('click', () => {
-  const catalogSelect = document.getElementById('catalog-card-select');
-  catalogSelect.innerHTML = '';
-  CARD_CATALOG.forEach(card => catalogSelect.innerHTML += `<option value="${card.id}">${card.name}</option>`);
-  document.getElementById('modal-card').classList.add('open');
-});
-
-document.getElementById('btn-add-bill').addEventListener('click', () => document.getElementById('modal-bill').classList.add('open'));
-document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', () => {
-  document.getElementById('modal-card').classList.remove('open');
-  document.getElementById('modal-bill').classList.remove('open');
-}));
-
-document.getElementById('btn-save-card').addEventListener('click', () => {
-  const selectedId = document.getElementById('catalog-card-select').value;
-  const catalogCard = CARD_CATALOG.find(c => c.id === selectedId);
-  if (catalogCard && !userCards.some(c => c.id === catalogCard.id)) {
-    userCards.push(catalogCard);
-    localStorage.setItem('optimus_user_cards', JSON.stringify(userCards));
-    renderCards();
-    updateRecommendation();
-  }
-  document.getElementById('modal-card').classList.remove('open');
-});
-
-document.getElementById('btn-save-bill').addEventListener('click', () => {
-  const name = document.getElementById('input-bill-name').value;
-  const amount = document.getElementById('input-bill-amount').value;
-  const date = document.getElementById('input-bill-date').value;
-  if (name && amount) {
-    bills.push({ id: Date.now(), name, amount, date });
-    localStorage.setItem('optimus_bills', JSON.stringify(bills));
-    renderBills();
-    document.getElementById('modal-bill').classList.remove('open');
-  }
-});
-
-// Init
-renderCards();
-renderBills();
-updateRecommendation();
-fetchLiveDeals(); // Fetch deals from backend!
