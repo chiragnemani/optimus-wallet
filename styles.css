@@ -210,6 +210,8 @@ body {
   justify-content: space-around;
   align-items: center;
   padding-bottom: 12px;
+  z-index: 1000; /* Elevates navigation bar above all other layers */
+  pointer-events: auto;
 }
 
 .nav-item {
