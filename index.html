@@ -2,1070 +2,514 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<meta name="theme-color" content="#0b0d12">
+<meta name="color-scheme" content="light dark">
+
 <title>Optimus Wallet</title>
-<meta name="theme-color" content="#0A0B0F">
-<meta name="description" content="Your personal financial advisor — best card to use, deals, and bill reminders.">
+
 <link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#08090c;
-    --bg-grad: radial-gradient(1200px 800px at 15% -10%, #10261f 0%, transparent 55%),
-               radial-gradient(1000px 700px at 110% 10%, #241a08 0%, transparent 45%),
-               #08090c;
-    --glass: rgba(255,255,255,0.055);
-    --glass-strong: rgba(255,255,255,0.09);
-    --glass-border: rgba(255,255,255,0.11);
-    --teal:#4CE0D2;
-    --teal-dim: rgba(76,224,210,0.35);
-    --amber:#F2B84B;
-    --amber-dim: rgba(242,184,75,0.35);
-    --text:#F5F6F8;
-    --text-dim: rgba(245,246,248,0.62);
-    --text-faint: rgba(245,246,248,0.36);
-    --danger:#FF6B6B;
-    --success:#6EE7B7;
-    --radius:22px;
-    --radius-sm:14px;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%; overflow:hidden; overscroll-behavior:none;}
-  body{
-    margin:0; background:var(--bg-grad); color:var(--text);
-    font-family:'Inter',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    touch-action:pan-y;
-  }
-  svg{ display:block; }
-  svg[stroke], svg [stroke]{ }
-  svg path, svg circle, svg rect, svg line, svg polyline{ stroke-linecap:round; stroke-linejoin:round; }
-  :root{ --spring: cubic-bezier(.25,1.2,.4,1); --ease: cubic-bezier(.2,.7,.3,1); }
-  .num, .mono{ font-family:'JetBrains Mono',monospace; }
-  .display{ font-family:'Space Grotesk',sans-serif; }
-  #app{
-    max-width:480px; margin:0 auto; height:100vh; height:100dvh;
-    position:relative; display:flex; flex-direction:column; overflow:hidden;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 200px);
-    border-left:1px solid rgba(255,255,255,0.04); border-right:1px solid rgba(255,255,255,0.04);
-  }
 
-  /* ---------- header ---------- */
-  header{
-    padding: calc(18px + var(--safe-top)) 20px 14px;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-shrink:0;
-  }
-  .greet-block .eyebrow{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); margin:0 0 2px; }
-  .greet-block h1{ font-family:'Space Grotesk',sans-serif; font-size:22px; margin:0; font-weight:600; }
-  .header-actions{ display:flex; gap:10px; align-items:center; }
-  .icon-btn{
-    width:40px;height:40px;border-radius:50%; display:flex;align-items:center;justify-content:center;
-    background:var(--glass); border:1px solid var(--glass-border); backdrop-filter:blur(20px);
-    cursor:pointer; color:var(--text-dim); transition: transform .18s var(--spring), background .25s var(--ease);
-  }
-  .icon-btn:active{ transform:scale(.9) rotate(-4deg); }
-  .orb-mini{ position:relative; width:40px;height:40px; }
-  .orb-mini svg{ width:100%;height:100%; }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-  /* ---------- scroll area ---------- */
-  main{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior-y:contain; padding: 4px 20px 110px; -webkit-overflow-scrolling:touch; }
-  main::-webkit-scrollbar{ width:0; }
-  .screen{ display:none; }
-  .screen.active{ display:block; animation: screenin .38s var(--spring); }
-  @keyframes screenin{ from{opacity:0; transform:translateY(10px) scale(.985);} to{opacity:1; transform:none;} }
+<link rel="stylesheet" href="./styles.css">
 
-  /* ---------- glass card ---------- */
-  .glass{
-    background:var(--glass); border:1px solid var(--glass-border);
-    backdrop-filter:blur(24px) saturate(140%); -webkit-backdrop-filter:blur(24px) saturate(140%);
-    border-radius:var(--radius);
-  }
-  .card{ padding:18px; margin-bottom:14px; }
-  .card h3{ margin:0 0 12px; font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:var(--text); }
-  .card .label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint); }
-
-  /* ---------- home hero ---------- */
-  .hero{ padding:22px 18px; margin-bottom:14px; position:relative; overflow:hidden; }
-  .hero::before{
-    content:''; position:absolute; inset:0; opacity:.5;
-    background: radial-gradient(220px 160px at 90% -10%, var(--teal-dim), transparent 70%);
-    pointer-events:none;
-  }
-  .hero .label{ margin-bottom:8px; }
-  .hero .best-card{ display:flex; align-items:center; gap:14px; margin-top:10px; }
-  .swatch{ width:50px;height:34px; border-radius:8px; flex-shrink:0; box-shadow:0 4px 14px rgba(0,0,0,.35); }
-  .best-card .name{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; }
-  .best-card .why{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
-  .rate-pill{
-    margin-left:auto; background:var(--teal-dim); color:var(--teal); border:1px solid rgba(76,224,210,.4);
-    padding:6px 12px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px; white-space:nowrap;
-  }
-
-  .chip-row{ display:flex; gap:8px; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; padding:2px 0 4px; margin: 0 -20px; padding-left:20px; padding-right:20px; max-width:calc(100% + 40px); scroll-snap-type:x proximity; }
-  .chip-row::-webkit-scrollbar{ display:none; }
-  .chip{
-    flex-shrink:0; padding:9px 14px; border-radius:999px; font-size:13px; font-weight:500;
-    background:var(--glass); border:1px solid var(--glass-border); color:var(--text-dim); cursor:pointer;
-    transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease), transform .15s var(--spring);
-    display:flex; align-items:center; gap:6px; scroll-snap-align:start;
-  }
-  .chip:active{ transform:scale(.94); }
-  .chip.active{ background:var(--teal-dim); color:var(--teal); border-color:rgba(76,224,210,.45); }
-
-  .row-between{ display:flex; align-items:center; justify-content:space-between; }
-  .section-title{ font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; margin: 20px 2px 10px; display:flex; align-items:center; justify-content:space-between; }
-  .section-title .see-all{ font-size:12px; color:var(--teal); font-weight:500; cursor:pointer; }
-
-  .bill-row, .deal-row{ display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.06); }
-  .bill-row:last-child, .deal-row:last-child{ border-bottom:none; }
-  .bill-dot{ width:8px;height:8px;border-radius:50%; flex-shrink:0; }
-  .bill-info{ flex:1; min-width:0; }
-  .bill-info .name{ font-size:14px; font-weight:500; }
-  .bill-info .meta{ font-size:12px; color:var(--text-faint); margin-top:1px; }
-  .bill-amount{ font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
-  .due-badge{ font-size:11px; padding:3px 9px; border-radius:999px; font-weight:600; white-space:nowrap; }
-
-  .empty{ text-align:center; padding:34px 14px; color:var(--text-faint); }
-  .empty .icon{ opacity:.5; margin-bottom:10px; }
-  .empty .cta{ margin-top:14px; }
-
-  /* ---------- buttons ---------- */
-  .btn{
-    border:none; border-radius:var(--radius-sm); padding:13px 18px; font-family:'Inter',sans-serif;
-    font-size:14px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    transition: transform .18s var(--spring), background .25s var(--ease), box-shadow .25s var(--ease);
-  }
-  .btn:active{ transform:scale(.96); }
-  .btn-primary{ background:linear-gradient(135deg, var(--teal), #2fb8ab); color:#04211d; }
-  .btn-amber{ background:linear-gradient(135deg, var(--amber), #d99a2b); color:#2a1c02; }
-  .btn-ghost{ background:var(--glass); border:1px solid var(--glass-border); color:var(--text); }
-  .btn-block{ width:100%; }
-  .btn-danger-ghost{ background:rgba(255,107,107,.1); border:1px solid rgba(255,107,107,.3); color:var(--danger); }
-
-  /* ---------- advisor grid ---------- */
-  .cat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
-  .cat-tile{
-    aspect-ratio:1; border-radius:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-    background:var(--glass); border:1px solid var(--glass-border); cursor:pointer;
-    transition: background .25s var(--ease), border-color .25s var(--ease), transform .18s var(--spring), box-shadow .25s var(--ease);
-  }
-  .cat-tile svg{ transition: transform .3s var(--spring); width:22px; height:22px; }
-  .cat-tile:active{ transform:scale(.92); }
-  .cat-tile.selected{ border-color:rgba(76,224,210,.5); background:var(--teal-dim); box-shadow:0 6px 22px -6px rgba(76,224,210,.35); transform:translateY(-2px); }
-  .cat-tile.selected svg{ transform:scale(1.12); }
-  .cat-tile span{ font-size:12px; font-weight:500; color:var(--text-dim); transition:color .25s var(--ease); }
-  .cat-tile.selected span{ color:var(--teal); }
-
-  .result-panel{ margin-top:16px; }
-  .stack-note{ display:flex; gap:10px; align-items:flex-start; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.08); }
-  .stack-note .dot{ width:6px;height:6px;border-radius:50%; background:var(--amber); margin-top:6px; flex-shrink:0; }
-
-  /* ---------- fab / bottom nav ---------- */
-  nav.tabbar{
-    position:absolute; left:0; right:0; bottom:0; max-width:480px; margin:0 auto;
-    padding: 10px 14px calc(12px + var(--safe-bottom));
-    display:flex; justify-content:space-around; position:absolute;
-    background: rgba(10,11,15,.72); backdrop-filter:blur(28px) saturate(150%); -webkit-backdrop-filter:blur(28px) saturate(150%);
-    border-top:1px solid var(--glass-border);
-  }
-  .tab{ position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--text-faint); cursor:pointer; padding:6px 10px; flex:1; z-index:1; }
-  .tab svg{ width:22px;height:22px; transition: transform .3s var(--spring); }
-  .tab span{ font-size:10.5px; font-weight:500; transition:color .25s var(--ease); }
-  .tab.active{ color:var(--teal); }
-  .tab.active svg{ transform:translateY(-1px) scale(1.08); }
-  .tab.jarvis-tab.active{ color:var(--amber); }
-  .tab:active svg{ transform:scale(.9); }
-  .tab-indicator{
-    position:absolute; top:2px; height:34px; border-radius:14px; background:var(--glass-strong);
-    border:1px solid var(--glass-border); transition: transform .38s var(--spring), width .38s var(--spring);
-    z-index:0; pointer-events:none;
-  }
-
-  /* ---------- modal / sheet ---------- */
-  .overlay{
-    position:absolute; inset:0; background:rgba(0,0,0,0); backdrop-filter:blur(0px);
-    display:none; align-items:flex-end; z-index:50;
-    transition: background .3s var(--ease), backdrop-filter .3s var(--ease);
-  }
-  .overlay.active{ display:flex; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
-  .sheet{
-    width:100%; max-height:88%; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
-    background:#111318; border-radius:26px 26px 0 0;
-    border:1px solid var(--glass-border); border-bottom:none;
-    padding: 16px 20px calc(24px + var(--safe-bottom));
-    transform:translateY(100%); transition: transform .34s var(--spring);
-  }
-  .overlay.active .sheet{ transform:translateY(0); }
-  .overlay.closing{ background:rgba(0,0,0,0); backdrop-filter:blur(0px); }
-  .overlay.closing .sheet{ transform:translateY(100%); }
-  .sheet-handle{ width:36px;height:4px;border-radius:2px; background:rgba(255,255,255,.2); margin:2px auto 16px; }
-  .sheet h2{ font-family:'Space Grotesk',sans-serif; font-size:19px; margin:0 0 16px; }
-  .field{ margin-bottom:14px; }
-  .field label{ display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px; font-weight:500; }
-  .field input, .field select, .field textarea{
-    width:100%; background:rgba(255,255,255,.05); border:1px solid var(--glass-border); border-radius:12px;
-    padding:12px 14px; color:var(--text); font-family:'Inter',sans-serif; font-size:14px; outline:none;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--teal); }
-  .field-row{ display:flex; gap:10px; }
-  .field-row .field{ flex:1; }
-  .chip-select{ display:flex; flex-wrap:wrap; gap:8px; }
-  .chip-select .chip{ flex:none; }
-  .sheet-actions{ display:flex; gap:10px; margin-top:20px; }
-  .sheet-actions .btn{ flex:1; }
-  .swatch-pick{ display:flex; gap:8px; flex-wrap:wrap; }
-  .swatch-pick div{ width:40px;height:28px; border-radius:7px; cursor:pointer; border:2px solid transparent; }
-  .swatch-pick div.sel{ border-color:#fff; }
-
-  /* ---------- JARVIS chat ---------- */
-  .chat-wrap{ display:flex; flex-direction:column; height:100%; }
-  .orb-stage{ display:flex; flex-direction:column; align-items:center; padding: 10px 0 18px; flex-shrink:0; }
-  .orb-big{ width:120px;height:120px; }
-  .orb-status{ margin-top:10px; font-size:13px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; letter-spacing:.03em; }
-  .chat-log{ flex:1; overflow-y:auto; padding:6px 2px 14px; }
-  .msg{ max-width:82%; margin-bottom:12px; padding:12px 15px; border-radius:18px; font-size:14px; line-height:1.5; animation: msgin .35s var(--spring); }
-  @keyframes msgin{ from{opacity:0; transform:translateY(8px) scale(.97);} to{opacity:1; transform:none;} }
-  .msg.user{ background:linear-gradient(135deg, var(--teal), #2fb8ab); color:#04211d; margin-left:auto; border-bottom-right-radius:5px; font-weight:500; }
-  .msg.jarvis{ background:var(--glass); border:1px solid var(--glass-border); margin-right:auto; border-bottom-left-radius:5px; white-space:pre-line; }
-  .suggest-row{ display:flex; gap:8px; overflow-x:auto; padding:6px 0 12px; margin:0 -2px; }
-  .suggest-row::-webkit-scrollbar{ display:none; }
-  .chat-input-row{ display:flex; gap:8px; align-items:center; padding-top:8px; flex-shrink:0; }
-  .chat-input-row input{
-    flex:1; background:var(--glass); border:1px solid var(--glass-border); border-radius:999px;
-    padding:13px 18px; color:var(--text); font-size:14px; outline:none;
-  }
-  .chat-input-row input:focus{ border-color:var(--teal); }
-  .send-btn{ width:46px;height:46px; border-radius:50%; background:linear-gradient(135deg, var(--amber), #d99a2b); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
-  .send-btn:active{ transform:scale(.9); }
-
-  /* ---------- toast ---------- */
-  #toast{
-    position:absolute; left:50%; bottom:100px; transform:translateX(-50%) translateY(20px); opacity:0;
-    background:rgba(20,22,28,.95); border:1px solid var(--glass-border); padding:11px 18px; border-radius:14px;
-    font-size:13px; pointer-events:none; transition:.25s; z-index:80; max-width:85%; text-align:center;
-  }
-  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-
-  ::selection{ background:var(--teal-dim); }
-  a{ color:var(--teal); }
-</style>
 </head>
+
 <body>
+
 <div id="app">
 
-  <header>
-    <div class="greet-block">
-      <p class="eyebrow" id="greetEyebrow">Good evening</p>
-      <h1 id="greetName">Chirag</h1>
-    </div>
-    <div class="header-actions">
-      <div class="icon-btn" onclick="openSettings()" aria-label="Settings">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2.5a2 2 0 110-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V2.5a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21.5a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      </div>
-      <div class="icon-btn orb-mini" onclick="goTab('jarvis')" aria-label="Ask Optimus">
-        <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#4CE0D2" stroke-width="2" opacity=".55"/><circle cx="30" cy="30" r="17" fill="none" stroke="#F2B84B" stroke-width="2" opacity=".8"/><circle cx="30" cy="30" r="7" fill="#4CE0D2" opacity=".9"/></svg>
-      </div>
-    </div>
-  </header>
 
-  <main>
+<!-- HEADER -->
 
-    <!-- ============ HOME ============ -->
-    <section class="screen active" id="screen-home">
-      <div class="glass hero" id="homeHero"></div>
+<header class="header">
 
-      <div class="glass card" id="upcomingCard">
-        <div class="row-between"><h3>Upcoming</h3><span class="label see-all" onclick="goTab('bills')">All bills →</span></div>
-        <div id="upcomingList"></div>
-      </div>
+<div>
+<p id="greeting" class="eyebrow">
+GOOD EVENING
+</p>
 
-      <div class="glass card" id="dealsCard">
-        <div class="row-between"><h3>Active deals</h3><span class="label see-all" onclick="goTab('deals')">All deals →</span></div>
-        <div id="dealsPreview"></div>
-      </div>
-    </section>
+<h1>
+<span id="userName">
+there
+</span>
+</h1>
 
-    <!-- ============ ADVISOR ============ -->
-    <section class="screen" id="screen-advisor">
-      <div class="section-title" style="margin-top:6px;">What are you buying?</div>
-      <div class="cat-grid" id="catGrid"></div>
-      <div class="result-panel" id="advisorResult"></div>
-    </section>
-
-    <!-- ============ DEALS ============ -->
-    <section class="screen" id="screen-deals">
-      <div class="section-title" style="margin-top:6px;">
-        Deals & offers
-        <span class="see-all" onclick="openDealForm()">+ Add</span>
-      </div>
-      <div class="glass card" id="dealsFullList"></div>
-    </section>
-
-    <!-- ============ BILLS ============ -->
-    <section class="screen" id="screen-bills">
-      <div class="section-title" style="margin-top:6px;">
-        Bills & subscriptions
-        <span class="see-all" onclick="openBillForm()">+ Add</span>
-      </div>
-      <div class="glass card" id="billsFullList"></div>
-      <div class="glass card" id="notifCard" style="display:none;">
-        <h3>Turn on reminders</h3>
-        <p style="font-size:13px;color:var(--text-dim);margin:0 0 12px;">Get notified before things renew or come due — checked every time you open the app.</p>
-        <button class="btn btn-amber btn-block" onclick="requestNotifPermission()">Enable notifications</button>
-      </div>
-    </section>
-
-    <!-- ============ JARVIS ============ -->
-    <section class="screen" id="screen-jarvis">
-      <div class="chat-wrap">
-        <div class="orb-stage">
-          <svg class="orb-big" viewBox="0 0 200 200" id="bigOrb">
-            <circle cx="100" cy="100" r="86" fill="none" stroke="#4CE0D2" stroke-width="1.5" opacity=".35"/>
-            <circle cx="100" cy="100" r="64" fill="none" stroke="#F2B84B" stroke-width="1.5" opacity=".45" id="orbRing2"/>
-            <circle cx="100" cy="100" r="40" fill="url(#orbGrad)" id="orbCore"/>
-            <defs>
-              <radialGradient id="orbGrad" cx="45%" cy="40%" r="65%">
-                <stop offset="0%" stop-color="#8FF3E8"/>
-                <stop offset="55%" stop-color="#4CE0D2"/>
-                <stop offset="100%" stop-color="#0d5c54"/>
-              </radialGradient>
-            </defs>
-          </svg>
-          <p class="orb-status mono" id="orbStatus">STANDING BY</p>
-        </div>
-        <div class="chat-log" id="chatLog"></div>
-        <div class="suggest-row" id="suggestRow"></div>
-        <div class="chat-input-row">
-          <input type="text" id="chatInput" placeholder="Ask Optimus anything…" onkeydown="if(event.key==='Enter')sendChat()">
-          <button class="send-btn" onclick="sendChat()" aria-label="Send">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2a1c02" stroke-width="2.3"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <nav class="tabbar">
-    <div class="tab-indicator" id="tabIndicator"></div>
-    <div class="tab active" data-tab="home" onclick="goTab('home')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-      <span>Home</span>
-    </div>
-    <div class="tab" data-tab="advisor" onclick="goTab('advisor')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg>
-      <span>Advisor</span>
-    </div>
-    <div class="tab" data-tab="deals" onclick="goTab('deals')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3.5L6 20l1.5-6.5L3 9l6-1z"/></svg>
-      <span>Deals</span>
-    </div>
-    <div class="tab" data-tab="bills" onclick="goTab('bills')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-      <span>Bills</span>
-    </div>
-    <div class="tab jarvis-tab" data-tab="jarvis" onclick="goTab('jarvis')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2"/></svg>
-      <span>Optimus</span>
-    </div>
-  </nav>
-
-  <!-- ============ SHEET / MODAL OVERLAY ============ -->
-  <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
-    <div class="sheet" id="sheetContent"></div>
-  </div>
-
-  <div id="toast"></div>
 </div>
 
-<script>
-/* ================= ICON LIBRARY (category icons) ================= */
-const ICONS = {
-  groceries: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2l1.5 5M18 2l-1.5 5M3.5 7h17l-1.8 11a2 2 0 01-2 1.7H7.3a2 2 0 01-2-1.7L3.5 7z"/><circle cx="9" cy="22" r="1"/><circle cx="15" cy="22" r="1"/></svg>',
-  dining: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 2v8a2 2 0 002 2v10M7 2v8M11 2v10M17 2c-2 0-3 2-3 5s1 4 3 4v11"/></svg>',
-  gas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 22V6a2 2 0 012-2h6a2 2 0 012 2v16M4 22h10M13 9h2l3 3v6a1.5 1.5 0 003 0v-5l-3-4"/><path d="M6 6h6v5H6z"/></svg>',
-  travel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10.5 3.5L3 8l3 1.5L3 14l3.5 1.5L10.5 20l4-14z"/><path d="M14.5 6L21 3l-3.5 6.5"/></svg>',
-  online: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-  drugstore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 3h4v4h4v4h-4v10h-4V11H6V7h4z"/></svg>',
-  entertainment: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>',
-  utilities: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
-  streaming: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M9 9l5 3-5 3z"/></svg>',
-  other: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>'
-};
-const CATEGORIES = [
-  {id:'groceries', label:'Groceries'},
-  {id:'dining', label:'Dining'},
-  {id:'gas', label:'Gas'},
-  {id:'travel', label:'Travel'},
-  {id:'online', label:'Online'},
-  {id:'drugstore', label:'Drugstore'},
-  {id:'entertainment', label:'Entertainment'},
-  {id:'utilities', label:'Utilities'},
-  {id:'streaming', label:'Streaming'},
-  {id:'other', label:'Other'}
-];
-const CARD_COLORS = ['#2a2f3a','#1f2a3d','#3d2a1f','#1f3d2e','#3d1f36','#26363d'];
 
-/* ================= STATE ================= */
-const DEFAULT_STATE = {
-  onboarded:false,
-  userName:'there',
-  jarvisName:'Optimus',
-  cards:[
-    {id:'c1', name:'Example — Flat Cashback Card', last4:'0000', color:'#1f2a3d', baseRate:2, rewards:[], rotating:null, example:true},
-    {id:'c2', name:'Example — Grocery Card', last4:'0000', color:'#3d2a1f', baseRate:1, rewards:[{category:'groceries',rate:6},{category:'streaming',rate:6}], rotating:null, example:true},
-    {id:'c3', name:'Example — Rotating Card', last4:'0000', color:'#26363d', baseRate:1, rewards:[], rotating:{categories:['gas','entertainment'], multiplier:5, period:'This quarter'}, example:true}
-  ],
-  deals:[
-    {id:'d1', merchant:'Example Retailer', description:'10% back on purchases over $50', category:'online', expiresAt:null, example:true}
-  ],
-  bills:[],
-  chatHistory:[],
-  apiKey:'',
-  apiModel:'claude-haiku-4-5-20251001',
-  notifEnabled:false
-};
-let state = loadState();
+<div class="header-actions">
 
-function loadState(){
-  try{
-    const raw = localStorage.getItem('jarvisWalletState');
-    if(!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
-    const parsed = JSON.parse(raw);
-    return Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-  }catch(e){ return JSON.parse(JSON.stringify(DEFAULT_STATE)); }
-}
-function saveState(){ localStorage.setItem('jarvisWalletState', JSON.stringify(state)); }
+<button id="settingsBtn"
+class="icon-button">
 
-/* ================= UTIL ================= */
-function uid(){ return Math.random().toString(36).slice(2,9); }
-function toast(msg){
-  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2400);
-}
-function fmtMoney(n){ return '$' + Number(n).toFixed(2).replace(/\.00$/,''); }
-function daysUntil(dateStr){
-  const now = new Date(); now.setHours(0,0,0,0);
-  const d = new Date(dateStr); d.setHours(0,0,0,0);
-  return Math.round((d-now)/86400000);
-}
-function nextOccurrence(bill){
-  // returns a Date for the next due date, rolling forward recurring bills that are in the past
-  let d = new Date(bill.dueDate);
-  const now = new Date(); now.setHours(0,0,0,0);
-  if(bill.recurrence === 'none') return d;
-  while(d < now){
-    if(bill.recurrence === 'monthly') d.setMonth(d.getMonth()+1);
-    else if(bill.recurrence === 'yearly') d.setFullYear(d.getFullYear()+1);
-    else break;
-  }
-  return d;
-}
+⚙
 
-/* ================= CARD ENGINE ================= */
-function cardRateForCategory(card, categoryId){
-  if(card.rotating && card.rotating.categories && card.rotating.categories.includes(categoryId)){
-    return {rate: card.rotating.multiplier, reason: `Rotating category active (${card.rotating.period})`};
-  }
-  const specific = (card.rewards||[]).find(r=>r.category===categoryId);
-  if(specific) return {rate: specific.rate, reason: `${specific.rate}% back on ${categoryLabel(categoryId)}`};
-  return {rate: card.baseRate||1, reason:`Flat ${card.baseRate||1}% base rate`};
-}
-function categoryLabel(id){ const c = CATEGORIES.find(c=>c.id===id); return c?c.label.toLowerCase():id; }
+</button>
 
-function computeBestCard(categoryId){
-  if(!state.cards.length) return null;
-  let best = null;
-  for(const card of state.cards){
-    const r = cardRateForCategory(card, categoryId);
-    if(!best || r.rate > best.rate){ best = {card, rate:r.rate, reason:r.reason}; }
-  }
-  return best;
-}
-function matchingDealsForCategory(categoryId){
-  return state.deals.filter(d => !d.category || d.category === categoryId).filter(d => !isExpired(d));
-}
-function isExpired(deal){ return deal.expiresAt && daysUntil(deal.expiresAt) < 0; }
-function activeDeals(){ return state.deals.filter(d=>!isExpired(d)); }
 
-/* ================= RENDER: HOME ================= */
-function renderHome(){
-  const hour = new Date().getHours();
-  document.getElementById('greetEyebrow').textContent = hour<12?'Good morning':hour<18?'Good afternoon':'Good evening';
-  document.getElementById('greetName').textContent = state.userName || 'there';
+<button id="optimusBtn"
+class="orb-button">
 
-  // Hero: best all-around card (highest base/flat rate) as a general "right now" suggestion
-  const best = computeBestCard('other');
-  const hero = document.getElementById('homeHero');
-  if(!best){
-    hero.innerHTML = `<p class="label">Best card right now</p><div class="empty" style="padding:10px 0;">
-      <p style="margin:0 0 12px;">Add your cards so I can start optimizing.</p>
-      <button class="btn btn-primary" onclick="openCardForm()">Add your first card</button>
-    </div>`;
-  } else {
-    hero.innerHTML = `
-      <p class="label">Best card right now</p>
-      <div class="best-card">
-        <div class="swatch" style="background:${best.card.color}"></div>
-        <div>
-          <div class="name">${best.card.name}</div>
-          <div class="why">${best.reason}</div>
-        </div>
-        <div class="rate-pill">${best.rate}%</div>
-      </div>
-      <div class="chip-row" style="margin-top:16px;">
-        ${CATEGORIES.slice(0,6).map(c=>`<div class="chip" onclick="goTab('advisor');setTimeout(()=>selectCategory('${c.id}'),80)">${c.label}</div>`).join('')}
-      </div>`;
-  }
+<div class="orb"></div>
 
-  // Upcoming bills (next 30 days, top 3)
-  const upcoming = state.bills.map(b=>({...b, _next: nextOccurrence(b)}))
-    .filter(b=>daysUntil(b._next) <= 30)
-    .sort((a,b)=>a._next-b._next).slice(0,3);
-  const upEl = document.getElementById('upcomingList');
-  document.getElementById('upcomingCard').style.display = state.bills.length ? 'block':'none';
-  upEl.innerHTML = upcoming.length ? upcoming.map(billRowHTML).join('') :
-    `<div class="empty" style="padding:14px 0;">Nothing due soon.</div>`;
+</button>
 
-  // Deals preview (top 2)
-  const deals = activeDeals().slice(0,2);
-  document.getElementById('dealsCard').style.display = state.deals.length ? 'block':'none';
-  document.getElementById('dealsPreview').innerHTML = deals.length ? deals.map(dealRowHTML).join('') :
-    `<div class="empty" style="padding:14px 0;">No active deals.</div>`;
-}
 
-function billRowHTML(b){
-  const days = daysUntil(b._next || nextOccurrence(b));
-  let badge, badgeColor;
-  if(days < 0){ badge='Overdue'; badgeColor='rgba(255,107,107,.18);color:#FF6B6B'; }
-  else if(days === 0){ badge='Due today'; badgeColor='rgba(255,107,107,.18);color:#FF6B6B'; }
-  else if(days <= 3){ badge=`${days}d left`; badgeColor='rgba(242,184,75,.18);color:#F2B84B'; }
-  else { badge=`${days}d left`; badgeColor='rgba(255,255,255,.08);color:rgba(245,246,248,.6)'; }
-  return `<div class="bill-row">
-    <span class="bill-dot" style="background:${days<=3?'#FF6B6B':'#4CE0D2'}"></span>
-    <div class="bill-info"><div class="name">${b.name}</div><div class="meta">${categoryLabel(b.category)} · ${b.recurrence!=='none'?b.recurrence:'one-time'}</div></div>
-    <div class="bill-amount num">${fmtMoney(b.amount)}</div>
-    <span class="due-badge" style="background:${badgeColor}">${badge}</span>
-  </div>`;
-}
-function dealRowHTML(d){
-  return `<div class="deal-row">
-    <span class="bill-dot" style="background:#F2B84B"></span>
-    <div class="bill-info"><div class="name">${d.merchant}</div><div class="meta">${d.description}</div></div>
-  </div>`;
-}
+</div>
 
-/* ================= RENDER: ADVISOR ================= */
-let selectedCategory = null;
-function renderAdvisor(){
-  const grid = document.getElementById('catGrid');
-  grid.innerHTML = CATEGORIES.map(c => `
-    <div class="cat-tile ${selectedCategory===c.id?'selected':''}" onclick="selectCategory('${c.id}')">
-      ${ICONS[c.id]}<span>${c.label}</span>
-    </div>`).join('');
-  renderAdvisorResult();
-}
-function selectCategory(id){
-  selectedCategory = id;
-  renderAdvisor();
-}
-function renderAdvisorResult(){
-  const el = document.getElementById('advisorResult');
-  if(!selectedCategory){ el.innerHTML=''; return; }
-  const best = computeBestCard(selectedCategory);
-  const deals = matchingDealsForCategory(selectedCategory);
-  if(!best){
-    el.innerHTML = `<div class="glass card"><div class="empty">Add a card first to get a recommendation.</div></div>`;
-    return;
-  }
-  el.innerHTML = `
-    <div class="glass card">
-      <p class="label">Use for ${categoryLabel(selectedCategory)}</p>
-      <div class="best-card" style="margin-top:10px;">
-        <div class="swatch" style="background:${best.card.color}"></div>
-        <div><div class="name">${best.card.name}</div><div class="why">${best.reason}</div></div>
-        <div class="rate-pill">${best.rate}%</div>
-      </div>
-      ${deals.length ? `<div class="stack-note"><span class="dot"></span><div style="font-size:13px;color:var(--text-dim);">Stack it: <b style="color:var(--amber)">${deals[0].merchant}</b> — ${deals[0].description}</div></div>` : ''}
-    </div>`;
-}
+</header>
 
-/* ================= RENDER: DEALS ================= */
-function renderDeals(){
-  const el = document.getElementById('dealsFullList');
-  if(!state.deals.length){
-    el.innerHTML = `<div class="empty"><div class="icon">🏷️</div>No deals yet.<div class="cta"><button class="btn btn-primary" onclick="openDealForm()">Add a deal</button></div></div>`;
-    return;
-  }
-  el.innerHTML = state.deals.map(d => {
-    const expired = isExpired(d);
-    return `<div class="deal-row" style="cursor:pointer; ${expired?'opacity:.4':''}" onclick="openDealForm('${d.id}')">
-      <span class="bill-dot" style="background:${expired?'#666':'#F2B84B'}"></span>
-      <div class="bill-info"><div class="name">${d.merchant}${d.example?' <span style=\"color:var(--text-faint);font-weight:400\">(example)</span>':''}</div>
-      <div class="meta">${d.description}${d.category?' · '+categoryLabel(d.category):''}${d.expiresAt? ' · exp '+new Date(d.expiresAt).toLocaleDateString():''}</div></div>
-    </div>`;
-  }).join('');
-}
 
-/* ================= RENDER: BILLS ================= */
-function renderBills(){
-  const el = document.getElementById('billsFullList');
-  document.getElementById('notifCard').style.display = state.notifEnabled ? 'none':'block';
-  if(!state.bills.length){
-    el.innerHTML = `<div class="empty"><div class="icon">📅</div>No bills tracked yet.<div class="cta"><button class="btn btn-primary" onclick="openBillForm()">Add a bill</button></div></div>`;
-    return;
-  }
-  const sorted = state.bills.map(b=>({...b,_next:nextOccurrence(b)})).sort((a,b)=>a._next-b._next);
-  el.innerHTML = sorted.map(b => `<div style="cursor:pointer" onclick="openBillForm('${b.id}')">${billRowHTML(b)}</div>`).join('');
-}
 
-/* ================= SHEETS: CARD FORM ================= */
-function openCardForm(id){
-  const card = id ? state.cards.find(c=>c.id===id) : null;
-  const colorPicks = CARD_COLORS.map(c=>`<div style="background:${c}" class="${card&&card.color===c?'sel':''}" onclick="pickColor('${c}')"></div>`).join('');
-  const catOptions = CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
-  openSheet(`
-    <h2>${card?'Edit card':'Add a card'}</h2>
-    <div class="field"><label>Card name</label><input id="f_name" value="${card?card.name:''}" placeholder="e.g. Chase Freedom Flex"></div>
-    <div class="field-row">
-      <div class="field"><label>Last 4 digits</label><input id="f_last4" maxlength="4" value="${card?card.last4:''}" placeholder="1234"></div>
-      <div class="field"><label>Base cashback %</label><input id="f_base" type="number" step="0.1" value="${card?card.baseRate:1}"></div>
-    </div>
-    <div class="field"><label>Color</label><div class="swatch-pick" id="colorPick">${colorPicks}</div></div>
-    <div class="field"><label>Category bonus rates (optional)</label>
-      <div id="rewardRows">${(card&&card.rewards||[]).map((r,i)=>rewardRowHTML(r,i)).join('')}</div>
-      <button class="btn btn-ghost" style="margin-top:6px;font-size:13px;padding:9px 14px;" onclick="addRewardRow()">+ Add category rate</button>
-    </div>
-    <div class="field"><label>Rotating category boost (optional, e.g. quarterly 5% categories)</label>
-      <div class="field-row">
-        <select id="f_rot_cat1"><option value="">None</option>${catOptions}</select>
-        <input id="f_rot_mult" type="number" placeholder="Multiplier %" value="${card&&card.rotating?card.rotating.multiplier:''}">
-      </div>
-      <input id="f_rot_period" style="margin-top:8px;" placeholder="Period label, e.g. Q3 2026" value="${card&&card.rotating?card.rotating.period:''}">
-    </div>
-    <div class="sheet-actions">
-      ${card?`<button class="btn btn-danger-ghost" onclick="deleteCard('${card.id}')">Delete</button>`:''}
-      <button class="btn btn-primary" onclick="saveCard(${card?`'${card.id}'`:'null'})">Save card</button>
-    </div>
-  `);
-  window._pickedColor = card?card.color:CARD_COLORS[0];
-  if(card && card.rotating && card.rotating.categories[0]){
-    setTimeout(()=>{ document.getElementById('f_rot_cat1').value = card.rotating.categories[0]; }, 0);
-  }
-}
-function pickColor(c){
-  window._pickedColor = c;
-  document.querySelectorAll('#colorPick div').forEach(d=>d.classList.remove('sel'));
-  event.target.classList.add('sel');
-}
-let rewardRowCount = 0;
-function rewardRowHTML(r, i){
-  const catOptions = CATEGORIES.map(c=>`<option value="${c.id}" ${r&&r.category===c.id?'selected':''}>${c.label}</option>`).join('');
-  return `<div class="field-row" style="margin-top:8px;" data-reward-row>
-    <select>${catOptions}</select>
-    <input type="number" step="0.1" placeholder="%" style="max-width:80px;" value="${r?r.rate:''}">
-  </div>`;
-}
-function addRewardRow(){
-  document.getElementById('rewardRows').insertAdjacentHTML('beforeend', rewardRowHTML(null));
-}
-function saveCard(id){
-  const name = document.getElementById('f_name').value.trim();
-  if(!name){ toast('Give the card a name'); return; }
-  const rewards = [...document.querySelectorAll('[data-reward-row]')].map(row=>{
-    const [sel, inp] = row.querySelectorAll('select, input');
-    return {category: sel.value, rate: parseFloat(inp.value)||0};
-  }).filter(r=>r.rate>0);
-  const rotCat = document.getElementById('f_rot_cat1').value;
-  const rotMult = parseFloat(document.getElementById('f_rot_mult').value);
-  const rotPeriod = document.getElementById('f_rot_period').value.trim();
-  const rotating = rotCat && rotMult ? {categories:[rotCat], multiplier:rotMult, period: rotPeriod||'Active now'} : null;
+<!-- MAIN -->
 
-  const data = {
-    name, last4: document.getElementById('f_last4').value.trim() || '0000',
-    baseRate: parseFloat(document.getElementById('f_base').value)||1,
-    color: window._pickedColor || CARD_COLORS[0],
-    rewards, rotating, example:false
-  };
-  if(id){ Object.assign(state.cards.find(c=>c.id===id), data); }
-  else{ state.cards.push({id:uid(), ...data}); }
-  saveState(); closeSheet(); toast('Card saved'); renderAll();
-}
-function deleteCard(id){
-  state.cards = state.cards.filter(c=>c.id!==id);
-  saveState(); closeSheet(); toast('Card removed'); renderAll();
-}
+<main>
 
-/* ================= SHEETS: DEAL FORM ================= */
-function openDealForm(id){
-  const deal = id ? state.deals.find(d=>d.id===id) : null;
-  const catOptions = `<option value="">Any category</option>` + CATEGORIES.map(c=>`<option value="${c.id}" ${deal&&deal.category===c.id?'selected':''}>${c.label}</option>`).join('');
-  openSheet(`
-    <h2>${deal?'Edit deal':'Add a deal'}</h2>
-    <div class="field"><label>Merchant / brand</label><input id="d_merchant" value="${deal?deal.merchant:''}" placeholder="e.g. Target"></div>
-    <div class="field"><label>Offer description</label><input id="d_desc" value="${deal?deal.description:''}" placeholder="e.g. 15% off with RedCard"></div>
-    <div class="field"><label>Category</label><select id="d_cat">${catOptions}</select></div>
-    <div class="field"><label>Expires (optional)</label><input id="d_exp" type="date" value="${deal&&deal.expiresAt?deal.expiresAt.slice(0,10):''}"></div>
-    <div class="sheet-actions">
-      ${deal?`<button class="btn btn-danger-ghost" onclick="deleteDeal('${deal.id}')">Delete</button>`:''}
-      <button class="btn btn-primary" onclick="saveDeal(${deal?`'${deal.id}'`:'null'})">Save deal</button>
-    </div>
-  `);
-}
-function saveDeal(id){
-  const merchant = document.getElementById('d_merchant').value.trim();
-  if(!merchant){ toast('Add a merchant name'); return; }
-  const data = {
-    merchant, description: document.getElementById('d_desc').value.trim(),
-    category: document.getElementById('d_cat').value || null,
-    expiresAt: document.getElementById('d_exp').value || null, example:false
-  };
-  if(id){ Object.assign(state.deals.find(d=>d.id===id), data); }
-  else{ state.deals.push({id:uid(), ...data}); }
-  saveState(); closeSheet(); toast('Deal saved'); renderAll();
-}
-function deleteDeal(id){
-  state.deals = state.deals.filter(d=>d.id!==id);
-  saveState(); closeSheet(); toast('Deal removed'); renderAll();
-}
 
-/* ================= SHEETS: BILL FORM ================= */
-function openBillForm(id){
-  const bill = id ? state.bills.find(b=>b.id===id) : null;
-  const catOptions = CATEGORIES.map(c=>`<option value="${c.id}" ${bill&&bill.category===c.id?'selected':''}>${c.label}</option>`).join('');
-  openSheet(`
-    <h2>${bill?'Edit bill':'Add a bill or subscription'}</h2>
-    <div class="field"><label>Name</label><input id="b_name" value="${bill?bill.name:''}" placeholder="e.g. Netflix"></div>
-    <div class="field-row">
-      <div class="field"><label>Amount</label><input id="b_amount" type="number" step="0.01" value="${bill?bill.amount:''}" placeholder="15.99"></div>
-      <div class="field"><label>Category</label><select id="b_cat">${catOptions}</select></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Next due date</label><input id="b_date" type="date" value="${bill?bill.dueDate.slice(0,10):''}"></div>
-      <div class="field"><label>Repeats</label><select id="b_rec">
-        <option value="monthly" ${bill&&bill.recurrence==='monthly'?'selected':''}>Monthly</option>
-        <option value="yearly" ${bill&&bill.recurrence==='yearly'?'selected':''}>Yearly</option>
-        <option value="none" ${bill&&bill.recurrence==='none'?'selected':''}>One-time</option>
-      </select></div>
-    </div>
-    <div class="sheet-actions">
-      ${bill?`<button class="btn btn-danger-ghost" onclick="deleteBill('${bill.id}')">Delete</button>`:''}
-      <button class="btn btn-primary" onclick="saveBill(${bill?`'${bill.id}'`:'null'})">Save</button>
-    </div>
-  `);
-}
-function saveBill(id){
-  const name = document.getElementById('b_name').value.trim();
-  const amount = parseFloat(document.getElementById('b_amount').value);
-  const dueDate = document.getElementById('b_date').value;
-  if(!name || !dueDate){ toast('Name and due date are required'); return; }
-  const data = { name, amount: amount||0, category: document.getElementById('b_cat').value,
-    dueDate, recurrence: document.getElementById('b_rec').value };
-  if(id){ Object.assign(state.bills.find(b=>b.id===id), data); }
-  else{ state.bills.push({id:uid(), ...data}); }
-  saveState(); closeSheet(); toast('Bill saved'); renderAll(); checkBillNotifications();
-}
-function deleteBill(id){
-  state.bills = state.bills.filter(b=>b.id!==id);
-  saveState(); closeSheet(); toast('Bill removed'); renderAll();
-}
+<!-- HOME -->
 
-/* ================= SETTINGS ================= */
-function openSettings(){
-  openSheet(`
-    <h2>Settings</h2>
-    <div class="field"><label>Your name</label><input id="s_name" value="${state.userName}"></div>
-    <div class="field"><label>Manage cards</label>
-      <div id="s_cardsList">${state.cards.map(c=>`<div class="bill-row" style="cursor:pointer" onclick="closeSheet();openCardForm('${c.id}')">
-        <span class="bill-dot" style="background:${c.color}"></span>
-        <div class="bill-info"><div class="name">${c.name} ${c.example?'<span style=\"color:var(--text-faint);font-weight:400\">(example)</span>':''}</div><div class="meta">Base ${c.baseRate}%</div></div>
-      </div>`).join('') || '<div class="empty" style="padding:10px 0">No cards yet.</div>'}</div>
-      <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="closeSheet();openCardForm()">+ Add a card</button>
-    </div>
+<section id="home"
+class="page active">
 
-    <div class="field" style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);">
-      <label>Assistant name</label><input id="s_jname" value="${state.jarvisName}">
-    </div>
-    <div class="field">
-      <label>Anthropic API key (optional — enables real conversational AI)</label>
-      <input id="s_apikey" type="password" value="${state.apiKey}" placeholder="sk-ant-...">
-      <p style="font-size:12px;color:var(--text-faint);margin:8px 0 0;line-height:1.5;">
-        Without a key, ${state.jarvisName} uses built-in logic over your own data — free, instant, works offline.
-        With a key, it calls Claude directly from your phone using your own account (fractions of a cent per message).
-        The key is stored only on this device. Because it's called directly from the browser, anyone with access to
-        your phone's dev tools could see it — fine for personal use, not something to share.
-      </p>
-    </div>
-    <div class="field">
-      <label>Notifications</label>
-      <button class="btn ${state.notifEnabled?'btn-ghost':'btn-amber'} btn-block" onclick="requestNotifPermission()">
-        ${state.notifEnabled?'Notifications enabled ✓':'Enable notifications'}
-      </button>
-    </div>
-    <div class="field" style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);">
-      <label>Backup</label>
-      <div class="field-row">
-        <button class="btn btn-ghost" style="flex:1" onclick="exportData()">Export data</button>
-        <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('importFile').click()">Import data</button>
-      </div>
-      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
-    </div>
-    <div class="sheet-actions">
-      <button class="btn btn-primary btn-block" onclick="saveSettings()">Save settings</button>
-    </div>
-    <button class="btn btn-danger-ghost btn-block" style="margin-top:10px;" onclick="if(confirm('Erase all your data on this device? This cannot be undone.')){resetApp()}">Reset app</button>
-  `);
-}
-function saveSettings(){
-  state.userName = document.getElementById('s_name').value.trim() || 'there';
-  state.jarvisName = document.getElementById('s_jname').value.trim() || 'Optimus';
-  state.apiKey = document.getElementById('s_apikey').value.trim();
-  saveState(); closeSheet(); toast('Settings saved'); renderAll();
-}
-function exportData(){
-  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = 'jarvis-wallet-backup.json'; a.click();
-}
-function importData(e){
-  const file = e.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try{
-      const parsed = JSON.parse(reader.result);
-      state = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-      saveState(); closeSheet(); toast('Data imported'); renderAll();
-    }catch(err){ toast('Could not read that file'); }
-  };
-  reader.readAsText(file);
-}
-function resetApp(){
-  localStorage.removeItem('jarvisWalletState');
-  state = loadState(); closeSheet(); renderAll(); toast('App reset');
-}
 
-/* ================= NOTIFICATIONS ================= */
-async function requestNotifPermission(){
-  if(!('Notification' in window)){ toast('Notifications not supported in this browser'); return; }
-  const perm = await Notification.requestPermission();
-  state.notifEnabled = perm === 'granted';
-  saveState();
-  if(perm === 'granted'){ toast('Notifications on'); checkBillNotifications(); }
-  else toast('Permission not granted');
-  renderAll();
-}
-function checkBillNotifications(){
-  if(!state.notifEnabled || Notification.permission !== 'granted') return;
-  const notifiedKey = 'jarvisNotified_' + new Date().toDateString();
-  const already = JSON.parse(localStorage.getItem(notifiedKey) || '[]');
-  state.bills.forEach(b=>{
-    const next = nextOccurrence(b);
-    const d = daysUntil(next);
-    if((d===3 || d===1 || d===0) && !already.includes(b.id+'_'+d)){
-      new Notification(`${state.jarvisName}: ${b.name}`, {
-        body: d===0 ? `Due today — ${fmtMoney(b.amount)}` : `Due in ${d} day${d>1?'s':''} — ${fmtMoney(b.amount)}`,
-        icon: './icon-192.png'
-      });
-      already.push(b.id+'_'+d);
-    }
-  });
-  localStorage.setItem(notifiedKey, JSON.stringify(already));
-}
+<div class="hero glass">
 
-/* ================= JARVIS CHAT ================= */
-const SUGGESTIONS = [
-  "What card for groceries?", "What's due this week?", "Any active deals?", "Summarize my savings"
-];
-function renderChatShell(){
-  document.getElementById('suggestRow').innerHTML = SUGGESTIONS.map(s=>`<div class="chip" onclick="quickAsk(\`${s}\`)">${s}</div>`).join('');
-  renderChatLog();
-}
-function renderChatLog(){
-  const log = document.getElementById('chatLog');
-  if(!state.chatHistory.length){
-    log.innerHTML = `<div class="msg jarvis">Evening${state.userName&&state.userName!=='there'?', '+state.userName:''}. Ask me which card to use, what's coming due, or what deals are active — I've got it all right here.</div>`;
-    return;
-  }
-  log.innerHTML = state.chatHistory.map(m => `<div class="msg ${m.role==='user'?'user':'jarvis'}">${escapeHtml(m.content)}</div>`).join('');
-  log.scrollTop = log.scrollHeight;
-}
-function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-function quickAsk(text){ document.getElementById('chatInput').value = text; sendChat(); }
+<div>
 
-function setOrbThinking(on){
-  document.getElementById('orbStatus').textContent = on ? 'PROCESSING…' : 'STANDING BY';
-  document.getElementById('orbCore').style.animation = on ? 'pulse 1s ease-in-out infinite' : '';
-}
-const styleEl = document.createElement('style');
-styleEl.textContent = `
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.75}}
-@keyframes breathe{0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px rgba(76,224,210,.35))}50%{transform:scale(1.045);filter:drop-shadow(0 0 22px rgba(76,224,210,.55))}}
-#orbCore{ transform-origin:100px 100px; animation: breathe 3.6s ease-in-out infinite; }
-#orbRing2{ animation:spin 8s linear infinite; transform-origin:100px 100px; }
-@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.orb-mini svg{ animation: breathe 3.6s ease-in-out infinite; transform-origin:center; }
-`;
-document.head.appendChild(styleEl);
+<p class="label">
+OPTIMUS RECOMMENDS
+</p>
 
-async function sendChat(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-  input.value = '';
-  state.chatHistory.push({role:'user', content:text});
-  renderChatLog(); saveState();
-  setOrbThinking(true);
 
-  let reply;
-  if(state.apiKey){
-    try{ reply = await askRealJarvis(text); }
-    catch(e){ reply = ruleBasedJarvis(text) + "\n\n(Couldn't reach the live model, so that's my built-in read on it.)"; }
-  } else {
-    await new Promise(r=>setTimeout(r, 350)); // small thinking beat
-    reply = ruleBasedJarvis(text);
-  }
-  setOrbThinking(false);
-  state.chatHistory.push({role:'assistant', content:reply});
-  if(state.chatHistory.length > 60) state.chatHistory = state.chatHistory.slice(-60);
-  saveState(); renderChatLog();
-}
+<h2 id="recommendation">
+Add your cards to begin optimization.
+</h2>
 
-function ruleBasedJarvis(textRaw){
-  const text = textRaw.toLowerCase();
-  const catMap = {
-    groceries:['grocery','groceries','supermarket','food shopping'],
-    dining:['restaurant','dining','dinner','lunch','eat out','takeout'],
-    gas:['gas','fuel','petrol'],
-    travel:['flight','hotel','travel','trip','airfare'],
-    online:['amazon','online shopping','online','ecommerce'],
-    drugstore:['pharmacy','drugstore','cvs','walgreens'],
-    entertainment:['movie','entertainment','concert','tickets'],
-    utilities:['utility','utilities','electric','water bill'],
-    streaming:['netflix','streaming','spotify','subscription service']
-  };
-  let matchedCat = null;
-  for(const [cat, kws] of Object.entries(catMap)){
-    if(kws.some(k=>text.includes(k))){ matchedCat = cat; break; }
-  }
-  if(matchedCat){
-    const best = computeBestCard(matchedCat);
-    if(best){
-      const deals = matchingDealsForCategory(matchedCat);
-      let out = `For ${categoryLabel(matchedCat)}, use your ${best.card.name} — ${best.reason}, ${best.rate}% back.`;
-      if(deals.length) out += `\n\nAlso stack: ${deals[0].merchant} — ${deals[0].description}.`;
-      return out;
-    }
-    return `I don't have any cards on file yet — add one in Settings and I'll start optimizing.`;
-  }
-  if(/due|bill|upcoming|renew|subscription/.test(text)){
-    const upcoming = state.bills.map(b=>({...b,_next:nextOccurrence(b)})).filter(b=>daysUntil(b._next)<=14).sort((a,b)=>a._next-b._next);
-    if(!upcoming.length) return `Nothing due in the next two weeks. All clear.`;
-    return `Here's what's coming up:\n` + upcoming.map(b=>`• ${b.name} — ${fmtMoney(b.amount)} in ${daysUntil(b._next)}d`).join('\n');
-  }
-  if(/deal|offer|discount|save|savings/.test(text)){
-    const deals = activeDeals();
-    if(!deals.length) return `No active deals on file right now. Add ones you spot and I'll match them to your cards automatically.`;
-    return `Active deals:\n` + deals.map(d=>`• ${d.merchant} — ${d.description}`).join('\n');
-  }
-  if(/hi|hello|hey/.test(text)){
-    return `At your service. Ask me which card to use for any category, what bills are coming up, or what deals are active.`;
-  }
-  if(/thank/.test(text)){
-    return `Anytime.`;
-  }
-  return `I can help with: which card to use for a category, upcoming bills, or active deals. Try "what card for dining?" or tap a suggestion below.`;
-}
 
-async function askRealJarvis(userText){
-  const context = {
-    cards: state.cards.map(c=>({name:c.name, baseRate:c.baseRate, rewards:c.rewards, rotating:c.rotating})),
-    deals: activeDeals().map(d=>({merchant:d.merchant, description:d.description, category:d.category})),
-    bills: state.bills.map(b=>({name:b.name, amount:b.amount, dueDate:b.dueDate, recurrence:b.recurrence, category:b.category}))
-  };
-  const system = `You are ${state.jarvisName}, a witty, concise, loyal personal financial assistant modeled on Tony Stark's AI — warm but efficient, never sycophantic. You have access to the user's real card rewards, active deals, and upcoming bills as JSON context below. Use ONLY this data to answer — never invent card names, rates, or bills that aren't listed. Keep replies short (2-4 sentences) unless asked for a list. Address financial questions directly with a recommendation and brief reasoning.
+<p id="recommendationReason"
+class="muted">
 
-DATA:
-${JSON.stringify(context)}`;
+</p>
 
-  const history = state.chatHistory.slice(-10).map(m=>({role:m.role==='assistant'?'assistant':'user', content:m.content}));
-  history.push({role:'user', content:userText});
+</div>
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': state.apiKey,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({ model: state.apiModel, max_tokens: 400, system, messages: history })
-  });
-  if(!res.ok) throw new Error('API error ' + res.status);
-  const data = await res.json();
-  const textBlock = (data.content||[]).find(b=>b.type==='text');
-  return textBlock ? textBlock.text : ruleBasedJarvis(userText);
-}
 
-/* ================= SHEET HELPERS ================= */
-function openSheet(html){
-  const overlay = document.getElementById('overlay');
-  document.getElementById('sheetContent').innerHTML = `<div class="sheet-handle"></div>` + html;
-  overlay.classList.remove('closing');
-  overlay.style.display = 'flex';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
-}
-function closeSheet(){
-  const overlay = document.getElementById('overlay');
-  overlay.classList.remove('active'); overlay.classList.add('closing');
-  setTimeout(()=>{ overlay.classList.remove('closing'); overlay.style.display='none'; }, 340);
-}
+</div>
 
-/* ================= TABS ================= */
-function goTab(tab){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  // restart animation even if same screen re-selected
-  const target = document.getElementById('screen-'+tab);
-  void target.offsetWidth;
-  target.classList.add('active');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
-  updateTabIndicator(tab);
-  if(tab==='jarvis') setTimeout(()=>document.getElementById('chatInput').focus(), 200);
-}
-function updateTabIndicator(tab){
-  const activeTab = document.querySelector(`.tab[data-tab="${tab}"]`);
-  const indicator = document.getElementById('tabIndicator');
-  if(!activeTab || !indicator) return;
-  const navRect = activeTab.parentElement.getBoundingClientRect();
-  const r = activeTab.getBoundingClientRect();
-  indicator.style.width = r.width + 'px';
-  indicator.style.transform = `translateX(${r.left - navRect.left}px)`;
-}
-window.addEventListener('resize', ()=>{
-  const active = document.querySelector('.tab.active');
-  if(active) updateTabIndicator(active.dataset.tab);
-});
 
-/* ================= RENDER ALL ================= */
-function renderAll(){
-  renderHome(); renderAdvisor(); renderDeals(); renderBills(); renderChatShell();
-}
 
-/* ================= INIT ================= */
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-}
-renderAll();
-requestAnimationFrame(()=>updateTabIndicator('home'));
-checkBillNotifications();
-setInterval(checkBillNotifications, 1000*60*30); // recheck every 30 min while app is open
-</script>
+<div class="glass panel">
+
+<div class="panel-header">
+
+<h3>
+Upcoming
+</h3>
+
+<button data-page="bills">
+View all
+</button>
+
+</div>
+
+
+<div id="upcomingBills">
+
+<div class="empty">
+No bills added.
+</div>
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="glass panel">
+
+<div class="panel-header">
+
+<h3>
+Active Deals
+</h3>
+
+
+<button data-page="deals">
+View all
+</button>
+
+</div>
+
+
+<div id="dealPreview">
+
+<div class="empty">
+No deals added.
+</div>
+
+
+</div>
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+<!-- WALLET -->
+
+<section id="wallet"
+class="page">
+
+
+<div class="page-title">
+
+<h2>
+Wallet
+</h2>
+
+<button id="addCard">
++
+</button>
+
+</div>
+
+
+
+<div id="cardsContainer">
+
+<div class="empty">
+
+No cards added.
+
+</div>
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- ADVISOR -->
+
+<section id="advisor"
+class="page">
+
+
+<div class="page-title">
+
+<h2>
+Card Advisor
+</h2>
+
+</div>
+
+
+<div class="category-grid"
+id="categoryGrid">
+
+</div>
+
+
+
+<div id="advisorResult">
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- OPTIMUS -->
+
+<section id="optimus"
+class="page">
+
+
+<div class="optimus-center">
+
+
+<div class="large-orb">
+
+</div>
+
+
+<p id="optimusStatus">
+
+STANDING BY
+
+</p>
+
+
+</div>
+
+
+
+<div id="chat">
+
+<div class="message assistant">
+
+I’m ready. Ask me about your cards, bills, or spending.
+
+</div>
+
+
+</div>
+
+
+
+<div class="chat-input">
+
+
+<input
+id="chatInput"
+placeholder="Ask Optimus...">
+
+
+<button id="sendMessage">
+
+➤
+
+</button>
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- BILLS -->
+
+<section id="bills"
+class="page">
+
+
+<div class="page-title">
+
+<h2>
+Bills
+</h2>
+
+
+<button id="addBill">
++
+</button>
+
+</div>
+
+
+
+<div id="billsContainer">
+
+<div class="empty">
+
+No bills tracked.
+
+</div>
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+<!-- DEALS -->
+
+<section id="deals"
+class="page">
+
+
+<div class="page-title">
+
+<h2>
+Deals
+</h2>
+
+
+<button id="addDeal">
++
+</button>
+
+
+</div>
+
+
+<div id="dealsContainer">
+
+<div class="empty">
+
+No deals saved.
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+</main>
+
+
+
+
+
+
+
+<!-- NAVIGATION -->
+
+
+<nav class="navigation">
+
+
+<button data-page="home"
+class="nav-item active">
+
+⌂
+
+<span>
+Home
+</span>
+
+</button>
+
+
+
+<button data-page="wallet"
+class="nav-item">
+
+▣
+
+<span>
+Wallet
+</span>
+
+</button>
+
+
+
+<button data-page="advisor"
+class="nav-item">
+
+◎
+
+<span>
+Advisor
+</span>
+
+</button>
+
+
+
+<button data-page="bills"
+class="nav-item">
+
+▤
+
+<span>
+Bills
+</span>
+
+</button>
+
+
+
+<button data-page="optimus"
+class="nav-item optimus-nav">
+
+◉
+
+<span>
+Optimus
+</span>
+
+</button>
+
+
+
+</nav>
+
+
+
+
+
+<!-- MODAL -->
+
+
+<div id="modal"
+class="modal hidden">
+
+
+<div class="modal-content glass">
+
+<button id="closeModal"
+class="close">
+
+×
+
+
+</button>
+
+
+<div id="modalBody">
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+<script src="./app.js"></script>
+
+
 </body>
 </html>
